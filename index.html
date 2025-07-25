@@ -1480,45 +1480,38 @@
         // بارگذاری نام مجموعه‌ها بر اساس استان
         async function loadBusinessNames(province) {
             try {
-                // شبیه‌سازی فراخوانی به گوگل اسکریپت
+                // فراخوانی از گوگل اسکریپت
                 showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
                 
-                // در واقعیت این آدرس باید به گوگل اسکریپت شما اشاره کند
-                // const response = await fetch(`https://script.google.com/macros/s/AKfycbwBd6XzeVA_IzadXbIcB5YxVBy9Mjd9IYmuvbF4qEYdQQdoJQT1wiV6XLyTQQt16fIxOg/exec?province=${province}`);
-                // const data = await response.json();
+                // این آدرس باید به گوگل اسکریپت شما اشاره کند
+                cconst response = await fetch(`https://script.google.com/macros/s/AKfycbwBd6XzeVA_IzadXbIcB5YxVBy9Mjd9IYmuvbF4qEYdQQdoJQT1wiV6XLyTQQt16fIxOg/exec?province=${encodeURIComponent(province)}`);
+                const data = await response.json();
                 
-                // شبیه‌سازی داده‌های برگشتی
-                const mockData = {
-                    "تهران": ["رستوران تهران", "فست فود تهران", "کافه تهران"],
-                    "خراسان": ["رستوران خراسان", "کبابی خراسان"],
-                    "فارس": ["رستوران شیراز", "بیرون بر شیراز"],
-                    "خوزستان": ["رستوران اهواز", "کافه اهواز"],
-                    "آذربایجان غربی": ["رستوران ارومیه", "کبابی ارومیه"],
-                    "مازندران": ["رستوران ساری", "کافه ساری"],
-                    "گیلان": ["رستوران رشت", "کافه رشت"],
-                    "هرمزگان": ["رستوران بندرعباس", "فست فود بندرعباس"],
-                    "اصفهان": ["رستوران اصفهان", "کافه اصفهان"]
-                };
-                
-                const data = mockData[province] || [];
-                
-                businessList = data;
-                businessNameEndSelect.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
-                
-                data.forEach(business => {
-                    const option = document.createElement('option');
-                    option.value = business;
-                    option.textContent = business;
-                    businessNameEndSelect.appendChild(option);
-                });
-                
-                showStatus('لیست مجموعه‌ها دریافت شد', 'success');
-                
-            } catch (error) {
-                showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
-                console.error('خطای دریافت لیست:', error);
-            }
+               // بررسی خطا در پاسخ
+        if (jsonData.error) {
+            throw new Error(jsonData.error);
         }
+        
+        // استخراج نام‌های مجموعه‌ها از داده‌ها
+        const businessNames = jsonData.map(item => item.name);
+        
+        businessList = businessNames;
+        businessNameEndSelect.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
+        
+        businessNames.forEach(business => {
+            const option = document.createElement('option');
+            option.value = business;
+            option.textContent = business;
+            businessNameEndSelect.appendChild(option);
+        });
+        
+        showStatus('لیست مجموعه‌ها دریافت شد', 'success');
+        
+    } catch (error) {
+        showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
+        console.error('خطای دریافت لیست:', error);
+    }
+}
         
         // رویداد تغییر استان
         provinceSelect.addEventListener('change', function() {
