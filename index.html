@@ -1246,9 +1246,7 @@
                     params.append('entry.367554561', businessTypeSelect.value); // نوع مجموعه
                     params.append('entry.475047817', businessNameInput.value.trim()); // نام مجموعه
                     params.append('entry.145698669', 'شروع مذاکره'); // نوع درخواست
-                    params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
-                    params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
-                    params.append('entry.555772584', locationData.accuracy); // دقت
+
                 } else if (currentRequestType === 'end') {
                     params.append('entry.475047817', businessNameEndSelect.value); // نام مجموعه
                     params.append('entry.632146796', managerNameInput.value.trim()); // نام مدیریت
@@ -1256,14 +1254,10 @@
                     params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
                     params.append('entry.573458779', negotiationResultSelect.value); // نتیجه مذاکره
                     params.append('entry.145698669', 'پایان مذاکره'); // نوع درخواست
-                    params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
-                    params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
-                    params.append('entry.555772584', locationData.accuracy); // دقت
+
                 } else if (currentRequestType === 'presence') {
                     params.append('entry.145698669', 'ثبت حضور'); // نوع درخواست
-                    params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
-                    params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
-                    params.append('entry.555772584', locationData.accuracy); // دقت
+
                 }
                 
                 // اطلاعات موقعیت (فقط برای حضوری)
