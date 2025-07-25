@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه حضور و غیاب | نسخه بهبودیافته</title>
+    <title>سامانه مدیریت مذاکرات | نسخه بهینه‌شده</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -50,6 +50,11 @@
         .header h1 {
             font-size: 1.8rem;
             margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
         
         .content {
@@ -134,6 +139,7 @@
         
         .camera-section {
             margin-bottom: 25px;
+            display: none; /* Hidden by default */
         }
         
         .camera-container {
@@ -242,6 +248,7 @@
             padding: 20px;
             margin-bottom: 25px;
             animation: slideIn 0.5s ease-out;
+            display: none; /* Hidden by default */
         }
         
         .location-header {
@@ -439,18 +446,62 @@
             font-size: 20px;
         }
         
-        .form-step {
-            display: none;
-        }
-        
-        .form-step.active {
-            display: block;
-        }
-        
         .section-divider {
             height: 1px;
             background: linear-gradient(to right, transparent, #26d0ce, transparent);
             margin: 20px 0;
+        }
+        
+        /* Negotiation Type Toggle */
+        .negotiation-type-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            background: #e9ecef;
+            border-radius: 30px;
+            padding: 5px;
+            position: relative;
+        }
+        
+        .toggle-label {
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-label.active {
+            background: #1a2980;
+            color: white;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            height: calc(100% - 10px);
+            width: 50%;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            left: 5px;
+        }
+        
+        .toggle-label:first-child.active ~ .toggle-slider {
+            left: 5px;
+        }
+        
+        .toggle-label:last-child.active ~ .toggle-slider {
+            left: calc(50% - 5px);
         }
         
         @media (max-width: 480px) {
@@ -562,6 +613,15 @@
         </div>
         
         <div class="content">
+            <!-- سوئیچ نوع مذاکره -->
+            <div class="negotiation-type-toggle">
+                <div class="toggle-container">
+                    <div class="toggle-label" id="tel-toggle" data-type="tel">تلفنی</div>
+                    <div class="toggle-label active" id="in-person-toggle" data-type="in-person">حضوری</div>
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            
             <!-- انتخاب نوع درخواست -->
             <div class="request-type-section">
                 <div class="request-type-title">
@@ -605,18 +665,6 @@
                         <option value="گیلان">گیلان</option>
                         <option value="هرمزگان">هرمزگان</option>
                         <option value="اصفهان">اصفهان</option>
-                    </select>
-                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
-                </div>
-                
-                <!-- نوع مذاکره -->
-                <div class="input-group" id="negotiation-type-container">
-                    <label for="negotiation-type"><i class="fas fa-comments"></i> نوع مذاکره</label>
-                    <i class="fas fa-microphone-alt"></i>
-                    <select id="negotiation-type">
-                        <option value="" selected disabled>نوع مذاکره را انتخاب کنید</option>
-                        <option value="حضوری">حضوری</option>
-                        <option value="تلفنی">تلفنی</option>
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
@@ -723,7 +771,7 @@
             <div class="section-divider"></div>
             
             <!-- بخش دوربین و موقعیت‌یابی -->
-            <div class="camera-section">
+            <div class="camera-section" id="camera-section">
                 <div class="camera-container">
                     <div class="camera-placeholder">
                         <i class="fas fa-camera"></i>
@@ -745,7 +793,7 @@
                 </div>
             </div>
             
-            <div class="location-section">
+            <div class="location-section" id="location-section">
                 <div class="location-header">
                     <h3><i class="fas fa-map-marker-alt"></i> موقعیت جغرافیایی</h3>
                 </div>
@@ -789,8 +837,6 @@
     <script>
         // عناصر DOM
         const provinceSelect = document.getElementById('province');
-        const negotiationTypeContainer = document.getElementById('negotiation-type-container');
-        const negotiationTypeSelect = document.getElementById('negotiation-type');
         const businessTypeContainer = document.getElementById('business-type-container');
         const businessTypeSelect = document.getElementById('business-type');
         const businessNameContainer = document.getElementById('business-name-container');
@@ -816,12 +862,17 @@
         const getLocationBtn = document.getElementById('get-location-btn');
         const timeRestrictionInfo = document.getElementById('time-restriction');
         const systemDisabledOverlay = document.getElementById('system-disabled-overlay');
+        const telToggle = document.getElementById('tel-toggle');
+        const inPersonToggle = document.getElementById('in-person-toggle');
+        const cameraSection = document.getElementById('camera-section');
+        const locationSection = document.getElementById('location-section');
         
         // متغیرهای وضعیت
         let stream = null;
         let locationData = null;
         let currentCameraMode = "environment"; // حالت پیش‌فرض دوربین عقب
         let currentRequestType = null; // 'start', 'end', 'presence'
+        let negotiationType = "in-person"; // 'tel' or 'in-person'
         
         // بازه‌های زمانی مجاز برای ثبت حضور
         const allowedTimeSlots = [
@@ -838,7 +889,6 @@
         // مدیریت نمایش فیلدها بر اساس نوع درخواست
         function updateFormFields() {
             // مخفی کردن همه بخش‌ها
-            negotiationTypeContainer.style.display = 'none';
             businessTypeContainer.style.display = 'none';
             businessNameContainer.style.display = 'none';
             endNegotiationSection.style.display = 'none';
@@ -846,13 +896,21 @@
             
             // نمایش فیلدهای بر اساس نوع درخواست
             if (currentRequestType === 'start') {
-                negotiationTypeContainer.style.display = 'block';
                 businessTypeContainer.style.display = 'block';
                 businessNameContainer.style.display = 'block';
             } else if (currentRequestType === 'end') {
                 endNegotiationSection.style.display = 'block';
             } else if (currentRequestType === 'presence') {
                 timeRestrictionInfo.style.display = 'block';
+            }
+            
+            // نمایش دوربین و موقعیت‌یابی فقط برای مذاکرات حضوری
+            if (negotiationType === 'in-person') {
+                cameraSection.style.display = 'block';
+                locationSection.style.display = 'block';
+            } else {
+                cameraSection.style.display = 'none';
+                locationSection.style.display = 'none';
             }
         }
         
@@ -891,6 +949,21 @@
             setActiveRequestType('presence');
             updateFormFields();
             submitBtn.disabled = false;
+        });
+        
+        // مدیریت سوئیچ نوع مذاکره
+        telToggle.addEventListener('click', () => {
+            negotiationType = 'tel';
+            telToggle.classList.add('active');
+            inPersonToggle.classList.remove('active');
+            updateFormFields();
+        });
+        
+        inPersonToggle.addEventListener('click', () => {
+            negotiationType = 'in-person';
+            inPersonToggle.classList.add('active');
+            telToggle.classList.remove('active');
+            updateFormFields();
         });
         
         // فعال‌سازی دوربین
@@ -1013,7 +1086,7 @@
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
             // بازه غیرفعال: از 00:30 تا 5:30
-            const disableStart = 1 * 60 + 30; // 00:30 (30 دقیقه)
+            const disableStart = 0 * 60 + 30; // 00:30 (30 دقیقه)
             const disableEnd = 5 * 60 + 30;   // 5:30 (330 دقیقه)
             
             // اگر زمان فعلی بین 00:30 تا 5:30 باشد
@@ -1033,11 +1106,6 @@
             
             // اعتبارسنجی بر اساس نوع درخواست
             if (currentRequestType === 'start') {
-                if (!negotiationTypeSelect.value) {
-                    showStatus('لطفاً نوع مذاکره را انتخاب کنید', 'error');
-                    return false;
-                }
-                
                 if (!businessTypeSelect.value) {
                     showStatus('لطفاً نوع مجموعه را انتخاب کنید', 'error');
                     return false;
@@ -1081,7 +1149,7 @@
                 return;
             }
             
-            if (!locationData) {
+            if (negotiationType === 'in-person' && !locationData) {
                 showStatus('لطفاً موقعیت جغرافیایی را دریافت کنید', 'error');
                 return;
             }
@@ -1105,12 +1173,12 @@
                 // ساخت پارامترهای ارسالی
                 const params = new URLSearchParams();
                 params.append('entry.1228562108', provinceSelect.value); // استان
+                params.append('entry.1995166577', negotiationType); // نوع مذاکره
                 
                 // اطلاعات بر اساس نوع درخواست
                 if (currentRequestType === 'start') {
-                    params.append('entry.2093256559', negotiationTypeSelect.value); // نوع مذاکره
-                    params.append('entry.1314182104', businessTypeSelect.value); // نوع مجموعه
-                    params.append('entry.1995166577', businessNameInput.value.trim()); // نام مجموعه
+                    params.append('entry.2093256559', businessTypeSelect.value); // نوع مجموعه
+                    params.append('entry.1314182104', businessNameInput.value.trim()); // نام مجموعه
                     params.append('entry.1723693542', 'شروع مذاکره'); // نوع درخواست
                 } else if (currentRequestType === 'end') {
                     params.append('entry.2093256559', managerNameInput.value.trim()); // نام مدیریت
@@ -1122,10 +1190,12 @@
                     params.append('entry.1723693542', 'ثبت حضور'); // نوع درخواست
                 }
                 
-                // اطلاعات موقعیت
-                params.append('entry.2093256559', locationData.latitude); // عرض جغرافیایی
-                params.append('entry.1314182104', locationData.longitude); // طول جغرافیایی
-                params.append('entry.1995166577', locationData.accuracy); // دقت
+                // اطلاعات موقعیت (فقط برای حضوری)
+                if (negotiationType === 'in-person') {
+                    params.append('entry.2093256559', locationData.latitude); // عرض جغرافیایی
+                    params.append('entry.1314182104', locationData.longitude); // طول جغرافیایی
+                    params.append('entry.1995166577', locationData.accuracy); // دقت
+                }
                 
                 // ارسال درخواست POST
                 await fetch(formUrl, {
@@ -1158,7 +1228,6 @@
         // ریست فرم پس از ارسال موفق
         function resetForm() {
             provinceSelect.selectedIndex = 0;
-            negotiationTypeSelect.selectedIndex = 0;
             businessTypeSelect.selectedIndex = 0;
             businessNameInput.value = '';
             managerNameInput.value = '';
@@ -1270,7 +1339,6 @@
                 
                 // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
                 provinceSelect.disabled = true;
-                negotiationTypeSelect.disabled = true;
                 businessTypeSelect.disabled = true;
                 businessNameInput.disabled = true;
                 managerNameInput.disabled = true;
@@ -1297,7 +1365,6 @@
                 
                 // فعال کردن دوباره عناصر
                 provinceSelect.disabled = false;
-                negotiationTypeSelect.disabled = false;
                 businessTypeSelect.disabled = false;
                 businessNameInput.disabled = false;
                 managerNameInput.disabled = false;
