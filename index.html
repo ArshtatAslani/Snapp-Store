@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه حضور و غیاب | دوربین و موقعیت‌یابی</title>
+    <title>سامانه حضور و غیاب | نسخه بهینه‌شده</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -346,7 +346,6 @@
             z-index: 10;
         }
         
-        /* استایل جدید برای کادر توسعه‌دهنده تک خطی و مرکزی */
         .dev-credit {
             text-align: center;
             direction: ltr;
@@ -364,25 +363,65 @@
             letter-spacing: 0.5px;
         }
 
-        /* برای نمایش بهتر در موبایل */
-        @media (max-width: 480px) {
-            .dev-credit {
-                font-size: 11px;
-                padding: 5px 8px;
-                margin-top: 10px;
-            }
+        /* استایل جدید برای نمایش کشویی‌ها */
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
         
-        .dev-credit span {
-            display: inline-block;
-            margin-left: 5px;
-            animation: sparkle 1.5s infinite;
+        .form-section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #1a2980;
+            border-bottom: 2px solid #26d0ce;
+            padding-bottom: 8px;
         }
         
-        @keyframes sparkle {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        .form-section-title i {
+            margin-left: 10px;
+        }
+        
+        .dynamic-field {
+            margin-top: 15px;
+            animation: fadeIn 0.5s;
+        }
+        
+        /* استایل جدید برای کشویی‌ها */
+        .custom-select {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .custom-select select {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .custom-select i {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            color: #1a2980;
+        }
+        
+        .custom-select::after {
+            content: "\f078";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #1a2980;
+            pointer-events: none;
         }
         
         @media (max-width: 480px) {
@@ -401,6 +440,12 @@
             .btn {
                 padding: 12px 15px;
                 font-size: 14px;
+            }
+            
+            .dev-credit {
+                font-size: 11px;
+                padding: 5px 8px;
+                margin-top: 10px;
             }
         }
         
@@ -482,10 +527,97 @@
         </div>
         
         <div class="content">
-            <div class="input-group">
-                <label for="marketing-code"><i class="fas fa-barcode"></i> کد بازاریابی</label>
-                <i class="fas fa-tag"></i>
-                <input type="text" id="marketing-code" placeholder="کد 5 رقمی خود را وارد نمایید...">
+            <!-- بخش اطلاعات استان -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>اطلاعات استان</h3>
+                </div>
+                
+                <div class="custom-select">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <select id="province">
+                        <option value="" selected disabled>استان خود را انتخاب کنید</option>
+                        <option value="تهران">تهران</option>
+                        <option value="خراسان">خراسان</option>
+                        <option value="فارس">فارس</option>
+                        <option value="خوزستان">خوزستان</option>
+                        <option value="آذربایجان غربی">آذربایجان غربی</option>
+                        <option value="مازندران">مازندران</option>
+                        <option value="گیلان">گیلان</option>
+                        <option value="هرمزگان">هرمزگان</option>
+                        <option value="اصفهان">اصفهان</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- بخش اطلاعات نرم افزار فعلی -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-laptop-code"></i>
+                    <h3>نرم افزار فعلی وندور</h3>
+                </div>
+                
+                <div class="custom-select">
+                    <i class="fas fa-software"></i>
+                    <select id="vendor-software">
+                        <option value="" selected disabled>نرم افزار فعلی را انتخاب کنید</option>
+                        <option value="سپید">سپید</option>
+                        <option value="زغفران">زغفران</option>
+                        <option value="مطبخ">مطبخ</option>
+                        <option value="حامی">حامی</option>
+                        <option value="پارسیان">پارسیان</option>
+                        <option value="آریا">آریا</option>
+                        <option value="باران">باران</option>
+                        <option value="فود سافت">فود سافت</option>
+                        <option value="سایر">سایر</option>
+                        <option value="فاقد نرم افزار">فاقد نرم افزار</option>
+                    </select>
+                </div>
+                
+                <div id="other-software-field" class="dynamic-field" style="display: none;">
+                    <div class="input-group">
+                        <label for="other-software"><i class="fas fa-edit"></i> نام نرم افزار</label>
+                        <input type="text" id="other-software" placeholder="نام نرم افزار مورد نظر را وارد نمایید...">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- بخش نتیجه مذاکره -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-handshake"></i>
+                    <h3>نتیجه مذاکره</h3>
+                </div>
+                
+                <div class="custom-select">
+                    <i class="fas fa-comments"></i>
+                    <select id="negotiation-result">
+                        <option value="" selected disabled>نتیجه مذاکره را انتخاب کنید</option>
+                        <option value="کامل">کامل</option>
+                        <option value="ناقص">ناقص</option>
+                        <option value="مذاکره مجدد">مذاکره مجدد</option>
+                        <option value="عدم حضور">عدم حضور</option>
+                        <option value="تعطیلی">تعطیلی</option>
+                        <option value="تعطیلی موقت">تعطیلی موقت</option>
+                        <option value="استور">استور</option>
+                        <option value="عدم تمایل">عدم تمایل</option>
+                    </select>
+                </div>
+                
+                <div id="disinterest-reason-field" class="dynamic-field" style="display: none;">
+                    <div class="custom-select">
+                        <i class="fas fa-question-circle"></i>
+                        <select id="disinterest-reason">
+                            <option value="" selected disabled>علت عدم تمایل را انتخاب کنید</option>
+                            <option value="قیمت بالا">قیمت بالا</option>
+                            <option value="اینترنت">اینترنت</option>
+                            <option value="سنتی">سنتی</option>
+                            <option value="عدم تمایل">عدم تمایل</option>
+                            <option value="فیچر خاص">فیچر خاص</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             
             <!-- کشویی نوع درخواست -->
@@ -504,7 +636,6 @@
             <div id="time-restriction" class="time-restriction-info">
                 <p><i class="fas fa-info-circle"></i> ثبت حضور فقط در بازه‌های زمانی زیر فعال است:</p>
                 <ul>
-                    <li>6:00 - 6:30</li>
                     <li>8:00 - 8:30</li>
                     <li>10:00 - 10:30</li>
                     <li>12:00 - 12:30</li>
@@ -581,7 +712,13 @@
 
     <script>
         // عناصر DOM
-        const marketingCodeInput = document.getElementById('marketing-code');
+        const provinceSelect = document.getElementById('province');
+        const vendorSoftwareSelect = document.getElementById('vendor-software');
+        const otherSoftwareField = document.getElementById('other-software-field');
+        const otherSoftwareInput = document.getElementById('other-software');
+        const negotiationResultSelect = document.getElementById('negotiation-result');
+        const disinterestReasonField = document.getElementById('disinterest-reason-field');
+        const disinterestReasonSelect = document.getElementById('disinterest-reason');
         const requestTypeSelect = document.getElementById('request-type');
         const startCameraBtn = document.getElementById('start-camera');
         const captureBtn = document.getElementById('capture-btn');
@@ -604,7 +741,6 @@
         
         // بازه‌های زمانی مجاز برای ثبت حضور
         const allowedTimeSlots = [
-            { start: { hour: 6, minute: 0 }, end: { hour: 6, minute: 30 } },
             { start: { hour: 8, minute: 0 }, end: { hour: 8, minute: 30 } },
             { start: { hour: 10, minute: 0 }, end: { hour: 10, minute: 30 } },
             { start: { hour: 12, minute: 0 }, end: { hour: 12, minute: 30 } },
@@ -614,6 +750,25 @@
             { start: { hour: 20, minute: 0 }, end: { hour: 20, minute: 30 } },
             { start: { hour: 22, minute: 0 }, end: { hour: 22, minute: 30 } }
         ];
+        
+        // مدیریت نمایش فیلدهای پویا
+        vendorSoftwareSelect.addEventListener('change', function() {
+            if (this.value === 'سایر') {
+                otherSoftwareField.style.display = 'block';
+            } else {
+                otherSoftwareField.style.display = 'none';
+                otherSoftwareInput.value = '';
+            }
+        });
+        
+        negotiationResultSelect.addEventListener('change', function() {
+            if (this.value === 'عدم تمایل') {
+                disinterestReasonField.style.display = 'block';
+            } else {
+                disinterestReasonField.style.display = 'none';
+                disinterestReasonSelect.selectedIndex = 0;
+            }
+        });
         
         // فعال‌سازی دوربین
         async function startCamera() {
@@ -685,7 +840,7 @@
                         getLocationBtn.innerHTML = '<i class="fas fa-check"></i> موقعیت دریافت شد';
                         
                         // فعال کردن دکمه ارسال
-                        if (marketingCodeInput.value.trim() !== '') {
+                        if (validateForm()) {
                             submitBtn.disabled = false;
                         }
                     },
@@ -755,11 +910,45 @@
             return false;
         }
         
-        // اعتبارسنجی کد بازاریابی (5 رقمی بودن)
-        function validateMarketingCode(code) {
-            // کد باید دقیقاً 5 رقم باشد
-            const regex = /^\d{5}$/;
-            return regex.test(code);
+        // اعتبارسنجی فرم
+        function validateForm() {
+            // اعتبارسنجی استان
+            if (!provinceSelect.value) {
+                showStatus('لطفاً استان خود را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            // اعتبارسنجی نرم‌افزار وندور
+            if (!vendorSoftwareSelect.value) {
+                showStatus('لطفاً نرم‌افزار فعلی وندور را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            // اگر سایر انتخاب شده، نام نرم‌افزار باید وارد شود
+            if (vendorSoftwareSelect.value === 'سایر' && !otherSoftwareInput.value.trim()) {
+                showStatus('لطفاً نام نرم‌افزار را وارد کنید', 'error');
+                return false;
+            }
+            
+            // اعتبارسنجی نتیجه مذاکره
+            if (!negotiationResultSelect.value) {
+                showStatus('لطفاً نتیجه مذاکره را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            // اگر عدم تمایل انتخاب شده، علت باید انتخاب شود
+            if (negotiationResultSelect.value === 'عدم تمایل' && !disinterestReasonSelect.value) {
+                showStatus('لطفاً علت عدم تمایل را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            // اعتبارسنجی نوع درخواست
+            if (!requestTypeSelect.value) {
+                showStatus('لطفاً نوع درخواست را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            return true;
         }
         
         // نمایش اطلاعات محدودیت زمانی برای ثبت حضور
@@ -779,7 +968,11 @@
                 systemDisabledOverlay.style.display = 'flex';
                 
                 // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
-                marketingCodeInput.disabled = true;
+                provinceSelect.disabled = true;
+                vendorSoftwareSelect.disabled = true;
+                otherSoftwareInput.disabled = true;
+                negotiationResultSelect.disabled = true;
+                disinterestReasonSelect.disabled = true;
                 requestTypeSelect.disabled = true;
                 startCameraBtn.disabled = true;
                 captureBtn.disabled = true;
@@ -797,7 +990,11 @@
                 systemDisabledOverlay.style.display = 'none';
                 
                 // فعال کردن دوباره عناصر
-                marketingCodeInput.disabled = false;
+                provinceSelect.disabled = false;
+                vendorSoftwareSelect.disabled = false;
+                otherSoftwareInput.disabled = false;
+                negotiationResultSelect.disabled = false;
+                disinterestReasonSelect.disabled = false;
                 requestTypeSelect.disabled = false;
                 startCameraBtn.disabled = false;
                 captureBtn.disabled = false;
@@ -822,7 +1019,7 @@
             }
             
             // وضعیت دکمه ارسال
-            if (marketingCodeInput.value.trim() !== '' && locationData) {
+            if (validateForm() && locationData) {
                 submitBtn.disabled = false;
             } else {
                 submitBtn.disabled = true;
@@ -838,20 +1035,12 @@
         
         // ثبت حضور و ارسال به گوگل فرم با استفاده از Fetch API
         submitBtn.addEventListener('click', async () => {
-            const marketingCode = marketingCodeInput.value.trim();
+            // اعتبارسنجی فرم
+            if (!validateForm()) {
+                return;
+            }
+            
             const requestType = requestTypeSelect.value;
-            
-            // اعتبارسنجی کد بازاریابی
-            if (!validateMarketingCode(marketingCode)) {
-                showStatus('کد بازاریابی باید دقیقاً 5 رقم عددی باشد', 'error');
-                marketingCodeInput.focus();
-                return;
-            }
-            
-            if (!requestType) {
-                showStatus('لطفاً نوع درخواست را انتخاب کنید', 'error');
-                return;
-            }
             
             if (!locationData) {
                 showStatus('لطفاً موقعیت جغرافیایی را دریافت کنید', 'error');
@@ -876,11 +1065,25 @@
                 
                 // ساخت پارامترهای ارسالی
                 const params = new URLSearchParams();
-                params.append('entry.1228562108', marketingCode); // کد بازاریابی
+                params.append('entry.1228562108', provinceSelect.value); // استان
+                params.append('entry.2093256559', vendorSoftwareSelect.value); // نرم‌افزار وندور
+                
+                // اگر سایر انتخاب شده، نام نرم‌افزار را ارسال کنید
+                if (vendorSoftwareSelect.value === 'سایر') {
+                    params.append('entry.1314182104', otherSoftwareInput.value.trim());
+                }
+                
+                params.append('entry.1995166577', negotiationResultSelect.value); // نتیجه مذاکره
+                
+                // اگر عدم تمایل انتخاب شده، علت را ارسال کنید
+                if (negotiationResultSelect.value === 'عدم تمایل') {
+                    params.append('entry.1723693542', disinterestReasonSelect.value);
+                }
+                
+                params.append('entry.1995166577', requestType); // نوع درخواست
                 params.append('entry.2093256559', locationData.latitude); // عرض جغرافیایی
                 params.append('entry.1314182104', locationData.longitude); // طول جغرافیایی
-                params.append('entry.1995166577', locationData.accuracy); // دقت
-                params.append('entry.1723693542', requestType); // نوع درخواست
+                params.append('entry.1723693542', locationData.accuracy); // دقت
                 
                 // ارسال درخواست POST
                 await fetch(formUrl, {
@@ -900,7 +1103,15 @@
                 
                 // ریست فرم
                 setTimeout(() => {
-                    marketingCodeInput.value = '';
+                    provinceSelect.selectedIndex = 0;
+                    vendorSoftwareSelect.selectedIndex = 0;
+                    otherSoftwareInput.value = '';
+                    otherSoftwareField.style.display = 'none';
+                    negotiationResultSelect.selectedIndex = 0;
+                    disinterestReasonSelect.selectedIndex = 0;
+                    disinterestReasonField.style.display = 'none';
+                    requestTypeSelect.selectedIndex = 0;
+                    
                     submitBtn.disabled = true;
                     getLocationBtn.disabled = false;
                     getLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> دریافت موقعیت جغرافیایی';
@@ -939,15 +1150,6 @@
                 statusMessage.style.display = 'none';
             }, 5000);
         }
-        
-        // اعتبارسنجی فرم
-        marketingCodeInput.addEventListener('input', () => {
-            if (marketingCodeInput.value.trim() !== '' && locationData) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-        });
         
         // انیمیشن موفقیت
         function showSuccessAnimation() {
