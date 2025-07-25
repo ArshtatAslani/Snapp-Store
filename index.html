@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه حضور و غیاب | نسخه بهینه‌شده</title>
+    <title>سامانه حضور و غیاب | نسخه بهبودیافته</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -56,8 +56,34 @@
             padding: 30px;
         }
         
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #1a2980;
+            border-bottom: 2px solid #26d0ce;
+            padding-bottom: 8px;
+        }
+        
+        .form-section-title i {
+            margin-left: 10px;
+        }
+        
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             position: relative;
         }
         
@@ -218,11 +244,6 @@
             animation: slideIn 0.5s ease-out;
         }
         
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         .location-header {
             display: flex;
             align-items: center;
@@ -362,26 +383,9 @@
             max-width: 90%;
             letter-spacing: 0.5px;
         }
-
-        /* استایل جدید برای نمایش کشویی‌ها */
-        .form-section {
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
         
-        .form-section-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            color: #1a2980;
-            border-bottom: 2px solid #26d0ce;
-            padding-bottom: 8px;
-        }
-        
-        .form-section-title i {
-            margin-left: 10px;
+        .form-section-title h3 {
+            font-size: 1.2rem;
         }
         
         .dynamic-field {
@@ -389,39 +393,64 @@
             animation: fadeIn 0.5s;
         }
         
-        /* استایل جدید برای کشویی‌ها */
-        .custom-select {
-            position: relative;
+        .request-type-section {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .request-type-title {
+            text-align: center;
             margin-bottom: 15px;
         }
         
-        .custom-select select {
-            width: 100%;
-            padding: 15px 45px 15px 15px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            font-size: 16px;
-            background-color: white;
-            appearance: none;
+        .request-type-options {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        
+        .request-type-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
         }
         
-        .custom-select i {
-            position: absolute;
-            left: 15px;
-            top: 15px;
+        .request-type-btn.active {
+            background: white;
             color: #1a2980;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .custom-select::after {
-            content: "\f078";
-            font-family: "Font Awesome 5 Free";
-            font-weight: 900;
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            color: #1a2980;
-            pointer-events: none;
+        .request-type-btn i {
+            font-size: 20px;
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #26d0ce, transparent);
+            margin: 20px 0;
         }
         
         @media (max-width: 480px) {
@@ -447,9 +476,16 @@
                 padding: 5px 8px;
                 margin-top: 10px;
             }
+            
+            .request-type-options {
+                flex-direction: column;
+            }
+            
+            .request-type-btn {
+                padding: 10px;
+            }
         }
         
-        /* استایل برای نمایش محدوده زمانی ثبت حضور */
         .time-restriction-info {
             background-color: #fff9db;
             border-left: 4px solid #f59f00;
@@ -479,7 +515,6 @@
             margin-bottom: 5px;
         }
         
-        /* استایل برای حالت غیرفعال کل سیستم */
         .system-disabled-overlay {
             position: absolute;
             top: 0;
@@ -516,26 +551,49 @@
     <div class="confetti" id="confetti"></div>
     
     <div class="container">
-        <!-- لایه غیرفعال سازی سیستم در ساعات تعطیل -->
         <div class="system-disabled-overlay" id="system-disabled-overlay">
             <i class="fas fa-power-off"></i>
             <p>سامانه از ساعت 00:30 تا 5:30 صبح غیرفعال می‌باشد.</p>
         </div>
         
         <div class="header">
-            <h1><i class="fas fa-camera"></i> سامانه حضور و غیاب</h1>
+            <h1><i class="fas fa-handshake"></i> سامانه مدیریت مذاکرات</h1>
+            <p>ثبت و پیگیری مذاکرات حضوری و تلفنی با وندورها</p>
         </div>
         
         <div class="content">
-            <!-- بخش اطلاعات استان -->
+            <!-- انتخاب نوع درخواست -->
+            <div class="request-type-section">
+                <div class="request-type-title">
+                    <h3>نوع درخواست خود را انتخاب کنید</h3>
+                </div>
+                <div class="request-type-options">
+                    <button class="request-type-btn" id="start-btn" data-type="start">
+                        <i class="fas fa-play-circle"></i>
+                        <span>شروع مذاکره</span>
+                    </button>
+                    <button class="request-type-btn" id="end-btn" data-type="end">
+                        <i class="fas fa-flag-checkered"></i>
+                        <span>پایان مذاکره</span>
+                    </button>
+                    <button class="request-type-btn" id="presence-btn" data-type="presence">
+                        <i class="fas fa-user-check"></i>
+                        <span>ثبت حضور</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- بخش اطلاعات عمومی -->
             <div class="form-section">
                 <div class="form-section-title">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <h3>اطلاعات استان</h3>
+                    <i class="fas fa-info-circle"></i>
+                    <h3>اطلاعات پایه</h3>
                 </div>
                 
-                <div class="custom-select">
-                    <i class="fas fa-map-marker-alt"></i>
+                <!-- استان -->
+                <div class="input-group">
+                    <label for="province"><i class="fas fa-map-marker-alt"></i> استان</label>
+                    <i class="fas fa-globe-asia"></i>
                     <select id="province">
                         <option value="" selected disabled>استان خود را انتخاب کنید</option>
                         <option value="تهران">تهران</option>
@@ -548,18 +606,70 @@
                         <option value="هرمزگان">هرمزگان</option>
                         <option value="اصفهان">اصفهان</option>
                     </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                
+                <!-- نوع مذاکره -->
+                <div class="input-group" id="negotiation-type-container">
+                    <label for="negotiation-type"><i class="fas fa-comments"></i> نوع مذاکره</label>
+                    <i class="fas fa-microphone-alt"></i>
+                    <select id="negotiation-type">
+                        <option value="" selected disabled>نوع مذاکره را انتخاب کنید</option>
+                        <option value="حضوری">حضوری</option>
+                        <option value="تلفنی">تلفنی</option>
+                    </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                
+                <!-- نوع مجموعه -->
+                <div class="input-group" id="business-type-container">
+                    <label for="business-type"><i class="fas fa-store"></i> نوع مجموعه</label>
+                    <i class="fas fa-building"></i>
+                    <select id="business-type">
+                        <option value="" selected disabled>نوع مجموعه را انتخاب کنید</option>
+                        <option value="فست فود">فست فود</option>
+                        <option value="رستوران">رستوران</option>
+                        <option value="کافه">کافه</option>
+                        <option value="بیرون بر">بیرون بر</option>
+                        <option value="کبابی">کبابی</option>
+                        <option value="آدر سرویس">آدر سرویس</option>
+                    </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                
+                <!-- نام مجموعه -->
+                <div class="input-group" id="business-name-container">
+                    <label for="business-name"><i class="fas fa-signature"></i> نام مجموعه</label>
+                    <i class="fas fa-file-signature"></i>
+                    <input type="text" id="business-name" placeholder="نام مجموعه را وارد نمایید...">
                 </div>
             </div>
             
-            <!-- بخش اطلاعات نرم افزار فعلی -->
-            <div class="form-section">
+            <!-- بخش اطلاعات پایان مذاکره -->
+            <div class="form-section" id="end-negotiation-section">
                 <div class="form-section-title">
-                    <i class="fas fa-laptop-code"></i>
-                    <h3>نرم افزار فعلی وندور</h3>
+                    <i class="fas fa-clipboard-check"></i>
+                    <h3>اطلاعات پایان مذاکره</h3>
                 </div>
                 
-                <div class="custom-select">
-                    <i class="fas fa-software"></i>
+                <!-- نام مدیریت -->
+                <div class="input-group">
+                    <label for="manager-name"><i class="fas fa-user-tie"></i> نام و نام خانوادگی مدیریت</label>
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="manager-name" placeholder="نام مدیریت را وارد نمایید...">
+                </div>
+                
+                <!-- شماره تماس مدیریت -->
+                <div class="input-group">
+                    <label for="manager-phone"><i class="fas fa-phone-alt"></i> شماره تماس مدیریت</label>
+                    <i class="fas fa-mobile-alt"></i>
+                    <input type="text" id="manager-phone" placeholder="شماره تماس را وارد نمایید...">
+                </div>
+                
+                <!-- نرم افزار فعلی -->
+                <div class="input-group">
+                    <label for="vendor-software"><i class="fas fa-laptop-code"></i> نرم افزار فعلی</label>
+                    <i class="fas fa-code"></i>
                     <select id="vendor-software">
                         <option value="" selected disabled>نرم افزار فعلی را انتخاب کنید</option>
                         <option value="سپید">سپید</option>
@@ -573,25 +683,13 @@
                         <option value="سایر">سایر</option>
                         <option value="فاقد نرم افزار">فاقد نرم افزار</option>
                     </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
                 
-                <div id="other-software-field" class="dynamic-field" style="display: none;">
-                    <div class="input-group">
-                        <label for="other-software"><i class="fas fa-edit"></i> نام نرم افزار</label>
-                        <input type="text" id="other-software" placeholder="نام نرم افزار مورد نظر را وارد نمایید...">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- بخش نتیجه مذاکره -->
-            <div class="form-section">
-                <div class="form-section-title">
-                    <i class="fas fa-handshake"></i>
-                    <h3>نتیجه مذاکره</h3>
-                </div>
-                
-                <div class="custom-select">
-                    <i class="fas fa-comments"></i>
+                <!-- نتیجه مذاکره -->
+                <div class="input-group">
+                    <label for="negotiation-result"><i class="fas fa-poll"></i> نتیجه مذاکره</label>
+                    <i class="fas fa-chart-line"></i>
                     <select id="negotiation-result">
                         <option value="" selected disabled>نتیجه مذاکره را انتخاب کنید</option>
                         <option value="کامل">کامل</option>
@@ -603,33 +701,8 @@
                         <option value="استور">استور</option>
                         <option value="عدم تمایل">عدم تمایل</option>
                     </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
-                
-                <div id="disinterest-reason-field" class="dynamic-field" style="display: none;">
-                    <div class="custom-select">
-                        <i class="fas fa-question-circle"></i>
-                        <select id="disinterest-reason">
-                            <option value="" selected disabled>علت عدم تمایل را انتخاب کنید</option>
-                            <option value="قیمت بالا">قیمت بالا</option>
-                            <option value="اینترنت">اینترنت</option>
-                            <option value="سنتی">سنتی</option>
-                            <option value="عدم تمایل">عدم تمایل</option>
-                            <option value="فیچر خاص">فیچر خاص</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- کشویی نوع درخواست -->
-            <div class="input-group">
-                <label for="request-type"><i class="fas fa-tasks"></i> نوع درخواست</label>
-                <i class="fas fa-list-alt"></i>
-                <select id="request-type">
-                    <option value="شروع مذاکره">شروع مذاکره</option>
-                    <option value="پایان مذاکره">پایان مذاکره</option>
-                    <option value="ثبت حضور">ثبت حضور</option>
-                </select>
-                <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
             </div>
             
             <!-- اطلاعات محدودیت زمانی ثبت حضور -->
@@ -647,6 +720,9 @@
                 </ul>
             </div>
             
+            <div class="section-divider"></div>
+            
+            <!-- بخش دوربین و موقعیت‌یابی -->
             <div class="camera-section">
                 <div class="camera-container">
                     <div class="camera-placeholder">
@@ -713,13 +789,20 @@
     <script>
         // عناصر DOM
         const provinceSelect = document.getElementById('province');
+        const negotiationTypeContainer = document.getElementById('negotiation-type-container');
+        const negotiationTypeSelect = document.getElementById('negotiation-type');
+        const businessTypeContainer = document.getElementById('business-type-container');
+        const businessTypeSelect = document.getElementById('business-type');
+        const businessNameContainer = document.getElementById('business-name-container');
+        const businessNameInput = document.getElementById('business-name');
+        const endNegotiationSection = document.getElementById('end-negotiation-section');
         const vendorSoftwareSelect = document.getElementById('vendor-software');
-        const otherSoftwareField = document.getElementById('other-software-field');
-        const otherSoftwareInput = document.getElementById('other-software');
         const negotiationResultSelect = document.getElementById('negotiation-result');
-        const disinterestReasonField = document.getElementById('disinterest-reason-field');
-        const disinterestReasonSelect = document.getElementById('disinterest-reason');
-        const requestTypeSelect = document.getElementById('request-type');
+        const managerNameInput = document.getElementById('manager-name');
+        const managerPhoneInput = document.getElementById('manager-phone');
+        const startBtn = document.getElementById('start-btn');
+        const endBtn = document.getElementById('end-btn');
+        const presenceBtn = document.getElementById('presence-btn');
         const startCameraBtn = document.getElementById('start-camera');
         const captureBtn = document.getElementById('capture-btn');
         const cameraFeed = document.getElementById('camera-feed');
@@ -738,6 +821,7 @@
         let stream = null;
         let locationData = null;
         let currentCameraMode = "environment"; // حالت پیش‌فرض دوربین عقب
+        let currentRequestType = null; // 'start', 'end', 'presence'
         
         // بازه‌های زمانی مجاز برای ثبت حضور
         const allowedTimeSlots = [
@@ -751,23 +835,62 @@
             { start: { hour: 22, minute: 0 }, end: { hour: 22, minute: 30 } }
         ];
         
-        // مدیریت نمایش فیلدهای پویا
-        vendorSoftwareSelect.addEventListener('change', function() {
-            if (this.value === 'سایر') {
-                otherSoftwareField.style.display = 'block';
-            } else {
-                otherSoftwareField.style.display = 'none';
-                otherSoftwareInput.value = '';
+        // مدیریت نمایش فیلدها بر اساس نوع درخواست
+        function updateFormFields() {
+            // مخفی کردن همه بخش‌ها
+            negotiationTypeContainer.style.display = 'none';
+            businessTypeContainer.style.display = 'none';
+            businessNameContainer.style.display = 'none';
+            endNegotiationSection.style.display = 'none';
+            timeRestrictionInfo.style.display = 'none';
+            
+            // نمایش فیلدهای بر اساس نوع درخواست
+            if (currentRequestType === 'start') {
+                negotiationTypeContainer.style.display = 'block';
+                businessTypeContainer.style.display = 'block';
+                businessNameContainer.style.display = 'block';
+            } else if (currentRequestType === 'end') {
+                endNegotiationSection.style.display = 'block';
+            } else if (currentRequestType === 'presence') {
+                timeRestrictionInfo.style.display = 'block';
             }
+        }
+        
+        // تنظیم وضعیت دکمه‌های انتخاب نوع درخواست
+        function setActiveRequestType(type) {
+            startBtn.classList.remove('active');
+            endBtn.classList.remove('active');
+            presenceBtn.classList.remove('active');
+            
+            if (type === 'start') {
+                startBtn.classList.add('active');
+            } else if (type === 'end') {
+                endBtn.classList.add('active');
+            } else if (type === 'presence') {
+                presenceBtn.classList.add('active');
+            }
+        }
+        
+        // رویدادهای دکمه‌های نوع درخواست
+        startBtn.addEventListener('click', () => {
+            currentRequestType = 'start';
+            setActiveRequestType('start');
+            updateFormFields();
+            submitBtn.disabled = false;
         });
         
-        negotiationResultSelect.addEventListener('change', function() {
-            if (this.value === 'عدم تمایل') {
-                disinterestReasonField.style.display = 'block';
-            } else {
-                disinterestReasonField.style.display = 'none';
-                disinterestReasonSelect.selectedIndex = 0;
-            }
+        endBtn.addEventListener('click', () => {
+            currentRequestType = 'end';
+            setActiveRequestType('end');
+            updateFormFields();
+            submitBtn.disabled = false;
+        });
+        
+        presenceBtn.addEventListener('click', () => {
+            currentRequestType = 'presence';
+            setActiveRequestType('presence');
+            updateFormFields();
+            submitBtn.disabled = false;
         });
         
         // فعال‌سازی دوربین
@@ -866,7 +989,6 @@
             const now = new Date();
             const currentHour = now.getHours();
             const currentMinute = now.getMinutes();
-            const currentSecond = now.getSeconds();
             
             // تبدیل زمان فعلی به دقیقه برای مقایسه آسان
             const currentTotalMinutes = currentHour * 60 + currentMinute;
@@ -875,16 +997,8 @@
                 const startTotalMinutes = slot.start.hour * 60 + slot.start.minute;
                 const endTotalMinutes = slot.end.hour * 60 + slot.end.minute;
                 
-                // برای نیمه شب (بازه 00:00 تا 00:30)
-                if (slot.start.hour === 0) {
-                    // اگر ساعت فعلی بین 0 تا 0:30 باشد
-                    if (currentHour === 0 && currentMinute >= 0 && currentMinute <= 30) {
-                        return true;
-                    }
-                } else {
-                    if (currentTotalMinutes >= startTotalMinutes && currentTotalMinutes < endTotalMinutes) {
-                        return true;
-                    }
+                if (currentTotalMinutes >= startTotalMinutes && currentTotalMinutes < endTotalMinutes) {
+                    return true;
                 }
             }
             
@@ -896,7 +1010,6 @@
             const now = new Date();
             const currentHour = now.getHours();
             const currentMinute = now.getMinutes();
-            const currentSeconds = now.getSeconds();
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
             // بازه غیرفعال: از 00:30 تا 5:30
@@ -918,119 +1031,47 @@
                 return false;
             }
             
-            // اعتبارسنجی نرم‌افزار وندور
-            if (!vendorSoftwareSelect.value) {
-                showStatus('لطفاً نرم‌افزار فعلی وندور را انتخاب کنید', 'error');
-                return false;
-            }
-            
-            // اگر سایر انتخاب شده، نام نرم‌افزار باید وارد شود
-            if (vendorSoftwareSelect.value === 'سایر' && !otherSoftwareInput.value.trim()) {
-                showStatus('لطفاً نام نرم‌افزار را وارد کنید', 'error');
-                return false;
-            }
-            
-            // اعتبارسنجی نتیجه مذاکره
-            if (!negotiationResultSelect.value) {
-                showStatus('لطفاً نتیجه مذاکره را انتخاب کنید', 'error');
-                return false;
-            }
-            
-            // اگر عدم تمایل انتخاب شده، علت باید انتخاب شود
-            if (negotiationResultSelect.value === 'عدم تمایل' && !disinterestReasonSelect.value) {
-                showStatus('لطفاً علت عدم تمایل را انتخاب کنید', 'error');
-                return false;
-            }
-            
-            // اعتبارسنجی نوع درخواست
-            if (!requestTypeSelect.value) {
-                showStatus('لطفاً نوع درخواست را انتخاب کنید', 'error');
-                return false;
+            // اعتبارسنجی بر اساس نوع درخواست
+            if (currentRequestType === 'start') {
+                if (!negotiationTypeSelect.value) {
+                    showStatus('لطفاً نوع مذاکره را انتخاب کنید', 'error');
+                    return false;
+                }
+                
+                if (!businessTypeSelect.value) {
+                    showStatus('لطفاً نوع مجموعه را انتخاب کنید', 'error');
+                    return false;
+                }
+                
+                if (!businessNameInput.value.trim()) {
+                    showStatus('لطفاً نام مجموعه را وارد کنید', 'error');
+                    return false;
+                }
+            } else if (currentRequestType === 'end') {
+                if (!managerNameInput.value.trim()) {
+                    showStatus('لطفاً نام مدیریت را وارد کنید', 'error');
+                    return false;
+                }
+                
+                if (!managerPhoneInput.value.trim()) {
+                    showStatus('لطفاً شماره تماس مدیریت را وارد کنید', 'error');
+                    return false;
+                }
+                
+                if (!vendorSoftwareSelect.value) {
+                    showStatus('لطفاً نرم‌افزار فعلی را انتخاب کنید', 'error');
+                    return false;
+                }
+                
+                if (!negotiationResultSelect.value) {
+                    showStatus('لطفاً نتیجه مذاکره را انتخاب کنید', 'error');
+                    return false;
+                }
+            } else if (currentRequestType === 'presence') {
+                // فقط نیاز به استان و موقعیت دارد
             }
             
             return true;
-        }
-        
-        // نمایش اطلاعات محدودیت زمانی برای ثبت حضور
-        requestTypeSelect.addEventListener('change', function() {
-            if (this.value === 'ثبت حضور') {
-                timeRestrictionInfo.classList.add('show');
-            } else {
-                timeRestrictionInfo.classList.remove('show');
-            }
-        });
-        
-        // تابع برای غیرفعال کردن کل سیستم در ساعات تعطیل
-        function toggleSystemState() {
-            const isDisabled = isInDisabledTime();
-            
-            if (isDisabled) {
-                systemDisabledOverlay.style.display = 'flex';
-                
-                // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
-                provinceSelect.disabled = true;
-                vendorSoftwareSelect.disabled = true;
-                otherSoftwareInput.disabled = true;
-                negotiationResultSelect.disabled = true;
-                disinterestReasonSelect.disabled = true;
-                requestTypeSelect.disabled = true;
-                startCameraBtn.disabled = true;
-                captureBtn.disabled = true;
-                getLocationBtn.disabled = true;
-                submitBtn.disabled = true;
-                rotateCameraBtn.disabled = true;
-                
-                // توقف دوربین اگر فعال باشد
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    cameraFeed.style.display = 'none';
-                    document.querySelector('.camera-placeholder').style.display = 'block';
-                }
-            } else {
-                systemDisabledOverlay.style.display = 'none';
-                
-                // فعال کردن دوباره عناصر
-                provinceSelect.disabled = false;
-                vendorSoftwareSelect.disabled = false;
-                otherSoftwareInput.disabled = false;
-                negotiationResultSelect.disabled = false;
-                disinterestReasonSelect.disabled = false;
-                requestTypeSelect.disabled = false;
-                startCameraBtn.disabled = false;
-                captureBtn.disabled = false;
-                getLocationBtn.disabled = false;
-                submitBtn.disabled = false;
-                rotateCameraBtn.disabled = false;
-                
-                // به‌روزرسانی وضعیت دکمه‌ها
-                updateButtonStates();
-            }
-        }
-        
-        // تابع برای به‌روزرسانی وضعیت دکمه‌ها
-        function updateButtonStates() {
-            // وضعیت دکمه شروع دوربین
-            if (stream) {
-                startCameraBtn.disabled = true;
-                captureBtn.disabled = false;
-            } else {
-                startCameraBtn.disabled = false;
-                captureBtn.disabled = true;
-            }
-            
-            // وضعیت دکمه ارسال
-            if (validateForm() && locationData) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-            
-            // وضعیت دکمه دریافت موقعیت
-            if (locationData) {
-                getLocationBtn.disabled = true;
-            } else {
-                getLocationBtn.disabled = false;
-            }
         }
         
         // ثبت حضور و ارسال به گوگل فرم با استفاده از Fetch API
@@ -1040,19 +1081,17 @@
                 return;
             }
             
-            const requestType = requestTypeSelect.value;
-            
             if (!locationData) {
                 showStatus('لطفاً موقعیت جغرافیایی را دریافت کنید', 'error');
                 return;
             }
             
             // اعتبارسنجی زمان ثبت حضور
-            if (requestType === 'ثبت حضور' && !isWithinAllowedTime()) {
+            if (currentRequestType === 'presence' && !isWithinAllowedTime()) {
                 const now = new Date();
                 const currentTime = now.toLocaleTimeString('fa-IR');
                 
-                showStatus(`ثبت حضور فقط در بازه‌های زمانی مشخص امکان‌پذیر است.`, 'error');
+                showStatus(`ثبت حضور فقط در بازه‌های زمانی مشخص امکان‌پذیر است. زمان فعلی: ${currentTime}`, 'error');
                 return;
             }
             
@@ -1066,24 +1105,27 @@
                 // ساخت پارامترهای ارسالی
                 const params = new URLSearchParams();
                 params.append('entry.1228562108', provinceSelect.value); // استان
-                params.append('entry.2093256559', vendorSoftwareSelect.value); // نرم‌افزار وندور
                 
-                // اگر سایر انتخاب شده، نام نرم‌افزار را ارسال کنید
-                if (vendorSoftwareSelect.value === 'سایر') {
-                    params.append('entry.1314182104', otherSoftwareInput.value.trim());
+                // اطلاعات بر اساس نوع درخواست
+                if (currentRequestType === 'start') {
+                    params.append('entry.2093256559', negotiationTypeSelect.value); // نوع مذاکره
+                    params.append('entry.1314182104', businessTypeSelect.value); // نوع مجموعه
+                    params.append('entry.1995166577', businessNameInput.value.trim()); // نام مجموعه
+                    params.append('entry.1723693542', 'شروع مذاکره'); // نوع درخواست
+                } else if (currentRequestType === 'end') {
+                    params.append('entry.2093256559', managerNameInput.value.trim()); // نام مدیریت
+                    params.append('entry.1314182104', managerPhoneInput.value.trim()); // شماره تماس مدیریت
+                    params.append('entry.1995166577', vendorSoftwareSelect.value); // نرم‌افزار فعلی
+                    params.append('entry.1723693542', negotiationResultSelect.value); // نتیجه مذاکره
+                    params.append('entry.1723693542', 'پایان مذاکره'); // نوع درخواست
+                } else if (currentRequestType === 'presence') {
+                    params.append('entry.1723693542', 'ثبت حضور'); // نوع درخواست
                 }
                 
-                params.append('entry.1995166577', negotiationResultSelect.value); // نتیجه مذاکره
-                
-                // اگر عدم تمایل انتخاب شده، علت را ارسال کنید
-                if (negotiationResultSelect.value === 'عدم تمایل') {
-                    params.append('entry.1723693542', disinterestReasonSelect.value);
-                }
-                
-                params.append('entry.1995166577', requestType); // نوع درخواست
+                // اطلاعات موقعیت
                 params.append('entry.2093256559', locationData.latitude); // عرض جغرافیایی
                 params.append('entry.1314182104', locationData.longitude); // طول جغرافیایی
-                params.append('entry.1723693542', locationData.accuracy); // دقت
+                params.append('entry.1995166577', locationData.accuracy); // دقت
                 
                 // ارسال درخواست POST
                 await fetch(formUrl, {
@@ -1103,34 +1145,7 @@
                 
                 // ریست فرم
                 setTimeout(() => {
-                    provinceSelect.selectedIndex = 0;
-                    vendorSoftwareSelect.selectedIndex = 0;
-                    otherSoftwareInput.value = '';
-                    otherSoftwareField.style.display = 'none';
-                    negotiationResultSelect.selectedIndex = 0;
-                    disinterestReasonSelect.selectedIndex = 0;
-                    disinterestReasonField.style.display = 'none';
-                    requestTypeSelect.selectedIndex = 0;
-                    
-                    submitBtn.disabled = true;
-                    getLocationBtn.disabled = false;
-                    getLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> دریافت موقعیت جغرافیایی';
-                    
-                    // توقف دوربین
-                    if (stream) {
-                        stream.getTracks().forEach(track => track.stop());
-                        cameraFeed.style.display = 'none';
-                        document.querySelector('.camera-placeholder').style.display = 'block';
-                        startCameraBtn.disabled = false;
-                        startCameraBtn.innerHTML = '<i class="fas fa-video"></i> فعال‌سازی دوربین';
-                        captureBtn.disabled = true;
-                    }
-                    
-                    // ریست موقعیت
-                    locationData = null;
-                    latitudeValue.textContent = '---';
-                    longitudeValue.textContent = '---';
-                    accuracyValue.textContent = '---';
+                    resetForm();
                 }, 2000);
                 
             } catch (error) {
@@ -1139,6 +1154,45 @@
                 console.error('خطای ارسال:', error);
             }
         });
+        
+        // ریست فرم پس از ارسال موفق
+        function resetForm() {
+            provinceSelect.selectedIndex = 0;
+            negotiationTypeSelect.selectedIndex = 0;
+            businessTypeSelect.selectedIndex = 0;
+            businessNameInput.value = '';
+            managerNameInput.value = '';
+            managerPhoneInput.value = '';
+            vendorSoftwareSelect.selectedIndex = 0;
+            negotiationResultSelect.selectedIndex = 0;
+            
+            submitBtn.disabled = true;
+            getLocationBtn.disabled = false;
+            getLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> دریافت موقعیت جغرافیایی';
+            
+            // توقف دوربین
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                cameraFeed.style.display = 'none';
+                document.querySelector('.camera-placeholder').style.display = 'block';
+                startCameraBtn.disabled = false;
+                startCameraBtn.innerHTML = '<i class="fas fa-video"></i> فعال‌سازی دوربین';
+                captureBtn.disabled = true;
+            }
+            
+            // ریست موقعیت
+            locationData = null;
+            latitudeValue.textContent = '---';
+            longitudeValue.textContent = '---';
+            accuracyValue.textContent = '---';
+            
+            // ریست نوع درخواست
+            startBtn.classList.remove('active');
+            endBtn.classList.remove('active');
+            presenceBtn.classList.remove('active');
+            currentRequestType = null;
+            updateFormFields();
+        }
         
         // نمایش پیام وضعیت
         function showStatus(message, type) {
@@ -1202,10 +1256,64 @@
         
         // اجرای تابع toggleSystemState در هنگام لود و هر دقیقه
         window.addEventListener('load', () => {
-            toggleSystemState();
             // بررسی هر دقیقه
             setInterval(toggleSystemState, 60000);
+            toggleSystemState();
         });
+        
+        // تابع برای غیرفعال کردن کل سیستم در ساعات تعطیل
+        function toggleSystemState() {
+            const isDisabled = isInDisabledTime();
+            
+            if (isDisabled) {
+                systemDisabledOverlay.style.display = 'flex';
+                
+                // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
+                provinceSelect.disabled = true;
+                negotiationTypeSelect.disabled = true;
+                businessTypeSelect.disabled = true;
+                businessNameInput.disabled = true;
+                managerNameInput.disabled = true;
+                managerPhoneInput.disabled = true;
+                vendorSoftwareSelect.disabled = true;
+                negotiationResultSelect.disabled = true;
+                startBtn.disabled = true;
+                endBtn.disabled = true;
+                presenceBtn.disabled = true;
+                startCameraBtn.disabled = true;
+                captureBtn.disabled = true;
+                getLocationBtn.disabled = true;
+                submitBtn.disabled = true;
+                rotateCameraBtn.disabled = true;
+                
+                // توقف دوربین اگر فعال باشد
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    cameraFeed.style.display = 'none';
+                    document.querySelector('.camera-placeholder').style.display = 'block';
+                }
+            } else {
+                systemDisabledOverlay.style.display = 'none';
+                
+                // فعال کردن دوباره عناصر
+                provinceSelect.disabled = false;
+                negotiationTypeSelect.disabled = false;
+                businessTypeSelect.disabled = false;
+                businessNameInput.disabled = false;
+                managerNameInput.disabled = false;
+                managerPhoneInput.disabled = false;
+                vendorSoftwareSelect.disabled = false;
+                negotiationResultSelect.disabled = false;
+                startBtn.disabled = false;
+                endBtn.disabled = false;
+                presenceBtn.disabled = false;
+                startCameraBtn.disabled = false;
+                captureBtn.disabled = true;
+                getLocationBtn.disabled = false;
+                submitBtn.disabled = true;
+                rotateCameraBtn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>
