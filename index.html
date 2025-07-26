@@ -618,6 +618,20 @@
             color: #2c3e50;
             max-width: 80%;
         }
+        
+        .manual-input-container {
+            display: none;
+            margin-top: 15px;
+            animation: fadeIn 0.5s;
+        }
+        
+        .manual-input-container input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -747,6 +761,12 @@
                         <option value="" selected disabled>لطفاً ابتدا استان را انتخاب کنید</option>
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                
+                <!-- امکان ورود دستی نام مجموعه -->
+                <div class="manual-input-container" id="manual-input-container">
+                    <label for="manual-business-name"><i class="fas fa-pen"></i> نام مجموعه را وارد کنید</label>
+                    <input type="text" id="manual-business-name" placeholder="نام مجموعه را وارد نمایید...">
                 </div>
                 
                 <!-- نام مدیریت -->
@@ -892,6 +912,8 @@
         const businessNameInput = document.getElementById('business-name');
         const businessNameEndContainer = document.getElementById('business-name-end-container');
         const businessNameEndSelect = document.getElementById('business-name-end');
+        const manualInputContainer = document.getElementById('manual-input-container');
+        const manualBusinessNameInput = document.getElementById('manual-business-name');
         const endNegotiationSection = document.getElementById('end-negotiation-section');
         const vendorSoftwareSelect = document.getElementById('vendor-software');
         const negotiationResultSelect = document.getElementById('negotiation-result');
@@ -928,6 +950,7 @@
         let negotiationType = "in-person"; // 'tel' or 'in-person'
         let user = null;
         let businessList = [];
+        let usingManualInput = false;
         
         // بازه‌های زمانی مجاز برای ثبت حضور
         const allowedTimeSlots = [
@@ -941,6 +964,14 @@
             { start: { hour: 22, minute: 0 }, end: { hour: 22, minute: 30 } }
         ];
         
+        // تابع برای به‌روزرسانی نام مجموعه‌ها
+        function updateBusinessNames() {
+            // فقط برای درخواست پایان مذاکره و زمانی که استان انتخاب شده
+            if (currentRequestType === 'end' && provinceSelect.value) {
+                loadBusinessNames(provinceSelect.value);
+            }
+        }
+        
         // مدیریت نمایش فیلدها بر اساس نوع درخواست
         function updateFormFields() {
             // مخفی کردن همه بخش‌ها
@@ -949,6 +980,7 @@
             endNegotiationSection.style.display = 'none';
             timeRestrictionInfo.style.display = 'none';
             businessNameEndContainer.style.display = 'none';
+            manualInputContainer.style.display = 'none';
             
             // نمایش فیلدهای بر اساس نوع درخواست
             if (currentRequestType === 'start') {
@@ -957,10 +989,8 @@
             } else if (currentRequestType === 'end') {
                 endNegotiationSection.style.display = 'block';
                 businessNameEndContainer.style.display = 'block';
-                // اگر استان انتخاب شده بود، لیست را بارگذاری کن
-                if(provinceSelect.value) {
-                    loadBusinessNames(provinceSelect.value);
-                }
+                // به‌روزرسانی لیست نام مجموعه‌ها
+                updateBusinessNames();
             } else if (currentRequestType === 'presence') {
                 timeRestrictionInfo.style.display = 'block';
             }
@@ -1177,8 +1207,9 @@
                     return false;
                 }
             } else if (currentRequestType === 'end') {
-                if (!businessNameEndSelect.value) {
-                    showStatus('لطفاً نام مجموعه را انتخاب کنید', 'error');
+                // بررسی نام مجموعه (انتخاب از لیست یا ورود دستی)
+                if (!businessNameEndSelect.value && !manualBusinessNameInput.value.trim()) {
+                    showStatus('لطفاً نام مجموعه را انتخاب یا وارد کنید', 'error');
                     return false;
                 }
                 
@@ -1248,7 +1279,9 @@
                     params.append('entry.145698669', 'شروع مذاکره'); // نوع درخواست
 
                 } else if (currentRequestType === 'end') {
-                    params.append('entry.475047817', businessNameEndSelect.value); // نام مجموعه
+                    // استفاده از نام مجموعه از لیست یا ورود دستی
+                    const businessName = businessNameEndSelect.value || manualBusinessNameInput.value.trim();
+                    params.append('entry.475047817', businessName); // نام مجموعه
                     params.append('entry.632146796', managerNameInput.value.trim()); // نام مدیریت
                     params.append('entry.1208820368', managerPhoneInput.value.trim()); // شماره تماس مدیریت
                     params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
@@ -1301,6 +1334,8 @@
             businessTypeSelect.selectedIndex = 0;
             businessNameInput.value = '';
             businessNameEndSelect.innerHTML = '<option value="" selected disabled>لطفاً ابتدا استان را انتخاب کنید</option>';
+            manualBusinessNameInput.value = '';
+            manualInputContainer.style.display = 'none';
             managerNameInput.value = '';
             managerPhoneInput.value = '';
             vendorSoftwareSelect.selectedIndex = 0;
@@ -1469,59 +1504,78 @@
         }
         
         // بارگذاری نام مجموعه‌ها بر اساس استان
-   async function loadBusinessNames(province) {
-    try {
-        showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
-        
-        // URL اصلاح شده اسکریپت گوگل (مطمئن شوید آدرس صحیح است)
-        const response = await fetch(`https://script.google.com/macros/s/AKfycbwBd6XzeVA_IzadXbIcB5YxVBy9Mjd9IYmuvbF4qEYdQQdoJQT1wiV6XLyTQQt16fIxOg/exec?province=${encodeURIComponent(province)}`);
-        
-        // بررسی وضعیت پاسخ
-        if (!response.ok) {
-            throw new Error(`خطای HTTP: ${response.status}`);
+        async function loadBusinessNames(province) {
+            try {
+                showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
+                
+                // اصلاح URL و افزودن پارامتر province
+                const url = `https://script.google.com/macros/s/AKfycbyDlC4XWv7sYwJ8FyLZ2gJxZ7XH7MvQy7qY1X9X6X8/exec?province=${encodeURIComponent(province)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`خطای HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('داده دریافتی:', data);
+                
+                let businessNames = [];
+                if (data.status === "success" && Array.isArray(data.data)) {
+                    businessNames = data.data.map(item => item.name);
+                } else if (Array.isArray(data)) {
+                    // پشتیبانی از ساختار قدیمی
+                    businessNames = data.map(item => item.name);
+                } else {
+                    throw new Error('ساختار داده نامعتبر است');
+                }
+                
+                if (businessNames.length === 0) {
+                    throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
+                }
+                
+                businessList = businessNames;
+                businessNameEndSelect.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
+                
+                businessNames.forEach(business => {
+                    const option = document.createElement('option');
+                    option.value = business;
+                    option.textContent = business;
+                    businessNameEndSelect.appendChild(option);
+                });
+                
+                // افزودن گزینه ورود دستی
+                const manualOption = document.createElement('option');
+                manualOption.value = "manual";
+                manualOption.textContent = "ورود دستی نام مجموعه";
+                businessNameEndSelect.appendChild(manualOption);
+                
+                showStatus('لیست مجموعه‌ها دریافت شد', 'success');
+                
+            } catch (error) {
+                showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
+                console.error('خطای دریافت لیست:', error);
+                
+                businessNameEndSelect.innerHTML = `
+                    <option value="" selected disabled>خطا در دریافت لیست</option>
+                    <option value="manual">ورود دستی نام مجموعه</option>
+                `;
+            }
         }
         
-        const data = await response.json();
-        
-        // بررسی ساختار داده دریافتی
-        console.log('داده دریافتی:', data); // برای دیباگ
-        
-        // استخراج نام مجموعه‌ها
-        let businessNames = [];
-        if (Array.isArray(data) && data.length > 0) {
-            businessNames = data.map(item => item.name);
-        } else {
-            throw new Error('داده‌ای دریافت نشد');
-        }
-        
-        businessList = businessNames;
-        businessNameEndSelect.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
-        
-        businessNames.forEach(business => {
-            const option = document.createElement('option');
-            option.value = business;
-            option.textContent = business;
-            businessNameEndSelect.appendChild(option);
+        // نمایش فیلد ورود دستی نام مجموعه
+        businessNameEndSelect.addEventListener('change', function() {
+            if (this.value === "manual") {
+                manualInputContainer.style.display = 'block';
+                usingManualInput = true;
+            } else {
+                manualInputContainer.style.display = 'none';
+                usingManualInput = false;
+            }
         });
-        
-        showStatus('لیست مجموعه‌ها دریافت شد', 'success');
-        
-    } catch (error) {
-        showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
-        console.error('خطای دریافت لیست:', error);
-        
-        // نمایش گزینه خطا در لیست
-        businessNameEndSelect.innerHTML = `
-            <option value="" selected disabled>خطا در دریافت لیست</option>
-        `;
-    }
-}
         
         // رویداد تغییر استان
         provinceSelect.addEventListener('change', function() {
-            if (this.value && currentRequestType === 'end') {
-                loadBusinessNames(this.value);
-            }
+            updateBusinessNames();
         });
         
         // مقداردهی اولیه
