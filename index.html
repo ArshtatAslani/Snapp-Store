@@ -1509,7 +1509,7 @@
                 showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
                 
                 // اصلاح URL و افزودن پارامتر province
-                const url = `https://script.google.com/macros/s/AKfycbyDlC4XWv7sYwJ8FyLZ2gJxZ7XH7MvQy7qY1X9X6X8/exec?province=${encodeURIComponent(province)}`;
+                const url = `https://script.google.com/macros/s/AKfycbwBd6XzeVA_IzadXbIcB5YxVBy9Mjd9IYmuvbF4qEYdQQdoJQT1wiV6XLyTQQt16fIxOg/exec?province=${encodeURIComponent(province)}`;
                 const response = await fetch(url);
                 
                 if (!response.ok) {
