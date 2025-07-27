@@ -603,6 +603,29 @@
             font-size: 16px;
             width: 100%;
         }
+        
+        /* استایل جدید برای بخش دلایل عدم تمایل */
+        .disinterest-reason-container {
+            display: none;
+            margin-top: 15px;
+            animation: fadeIn 0.5s;
+        }
+        
+        .disinterest-reason-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .disinterest-reason-container select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+        }
     </style>
 </head>
 <body>
@@ -689,11 +712,18 @@
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
                 
-                <!-- نام بازاریاب -->
+                <!-- نام بازاریاب (تغییر به دراپ‌دان) -->
                 <div class="input-group">
                     <label for="marketer-name"><i class="fas fa-user-tie"></i> نام بازاریاب</label>
                     <i class="fas fa-user"></i>
-                    <input type="text" id="marketer-name" placeholder="نام بازاریاب را وارد نمایید...">
+                    <select id="marketer-name">
+                        <option value="" selected disabled>نام بازاریاب را انتخاب کنید</option>
+                        <option value="آرزو ضرغامی - شیراز">آرزو ضرغامی - شیراز</option>
+                        <option value="هانیه نژادعلی - شیراز">هانیه نژادعلی - شیراز</option>
+                        <option value="الهه فیروزی - تهران">الهه فیروزی - تهران</option>
+                        <option value="آتنا شیری - تهران">آتنا شیری - تهران</option>
+                    </select>
+                    <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
                 
                 <!-- نوع مجموعه -->
@@ -794,6 +824,19 @@
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
+                
+                <!-- بخش دلایل عدم تمایل (جدید) -->
+                <div class="disinterest-reason-container" id="disinterest-reason-container">
+                    <label for="disinterest-reason"><i class="fas fa-exclamation-circle"></i> دلیل عدم تمایل</label>
+                    <select id="disinterest-reason">
+                        <option value="" selected disabled>دلیل عدم تمایل را انتخاب کنید</option>
+                        <option value="قیمت بالای نرم افزار">قیمت بالای نرم افزار</option>
+                        <option value="نداشتن اینترنت و سیستم">نداشتن اینترنت و سیستم</option>
+                        <option value="تمایل به روش سنتی">تمایل به روش سنتی</option>
+                        <option value="عدم موافقت با حذف نرم افزار قبلی">عدم موافقت با حذف نرم افزار قبلی</option>
+                        <option value="نیاز به فیچر خاص">نیاز به فیچر خاص</option>
+                    </select>
+                </div>
             </div>
             
             <div class="section-divider"></div>
@@ -865,7 +908,7 @@
     <script>
         // عناصر DOM
         const provinceSelect = document.getElementById('province');
-        const marketerNameInput = document.getElementById('marketer-name');
+        const marketerNameSelect = document.getElementById('marketer-name');
         const businessTypeContainer = document.getElementById('business-type-container');
         const businessTypeSelect = document.getElementById('business-type');
         const businessNameContainer = document.getElementById('business-name-container');
@@ -877,6 +920,8 @@
         const endNegotiationSection = document.getElementById('end-negotiation-section');
         const vendorSoftwareSelect = document.getElementById('vendor-software');
         const negotiationResultSelect = document.getElementById('negotiation-result');
+        const disinterestReasonContainer = document.getElementById('disinterest-reason-container');
+        const disinterestReasonSelect = document.getElementById('disinterest-reason');
         const managerNameInput = document.getElementById('manager-name');
         const managerPhoneInput = document.getElementById('manager-phone');
         const startBtn = document.getElementById('start-btn');
@@ -910,6 +955,16 @@
         let businessList = [];
         let usingManualInput = false;
         
+        // مدیریت نمایش دلایل عدم تمایل
+        negotiationResultSelect.addEventListener('change', function() {
+            if (this.value === "عدم تمایل") {
+                disinterestReasonContainer.style.display = 'block';
+            } else {
+                disinterestReasonContainer.style.display = 'none';
+                disinterestReasonSelect.selectedIndex = 0;
+            }
+        });
+        
         // تابع برای به‌روزرسانی نام مجموعه‌ها
         function updateBusinessNames() {
             // فقط برای درخواست پایان مذاکره و زمانی که استان انتخاب شده
@@ -926,6 +981,7 @@
             endNegotiationSection.style.display = 'none';
             businessNameEndContainer.style.display = 'none';
             manualInputContainer.style.display = 'none';
+            disinterestReasonContainer.style.display = 'none';
             
             // نمایش فیلدهای بر اساس نوع درخواست
             if (currentRequestType === 'start') {
@@ -1109,8 +1165,8 @@
             }
             
             // اعتبارسنجی نام بازاریاب
-            if (!marketerNameInput.value.trim()) {
-                showStatus('لطفاً نام بازاریاب را وارد کنید', 'error');
+            if (!marketerNameSelect.value) {
+                showStatus('لطفاً نام بازاریاب را انتخاب کنید', 'error');
                 return false;
             }
             
@@ -1151,6 +1207,12 @@
                     showStatus('لطفاً نتیجه مذاکره را انتخاب کنید', 'error');
                     return false;
                 }
+                
+                // اگر "عدم تمایل" انتخاب شده باشد، دلیل باید انتخاب شود
+                if (negotiationResultSelect.value === "عدم تمایل" && !disinterestReasonSelect.value) {
+                    showStatus('لطفاً دلیل عدم تمایل را انتخاب کنید', 'error');
+                    return false;
+                }
             }
             
             return true;
@@ -1185,7 +1247,7 @@
                     params.append('entry.367554561', businessTypeSelect.value); // نوع مجموعه
                     params.append('entry.475047817', businessNameInput.value.trim()); // نام مجموعه
                     params.append('entry.145698669', 'شروع مذاکره'); // نوع درخواست
-                    params.append('entry.1236889664', marketerNameInput.value.trim()); // نام بازاریاب
+                    params.append('entry.1236889664', marketerNameSelect.value); // نام بازاریاب
 
                 } else if (currentRequestType === 'end') {
                     // استفاده از نام مجموعه از لیست یا ورود دستی
@@ -1196,8 +1258,12 @@
                     params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
                     params.append('entry.573458779', negotiationResultSelect.value); // نتیجه مذاکره
                     params.append('entry.145698669', 'پایان مذاکره'); // نوع درخواست
-                    params.append('entry.1236889664', marketerNameInput.value.trim()); // نام بازاریاب
-
+                    params.append('entry.1236889664', marketerNameSelect.value); // نام بازاریاب
+                    
+                    // ارسال دلیل عدم تمایل اگر انتخاب شده باشد
+                    if (negotiationResultSelect.value === "عدم تمایل" && disinterestReasonSelect.value) {
+                        params.append('entry.999999999', disinterestReasonSelect.value); // دلیل عدم تمایل (ای دی فرضی)
+                    }
                 }
                 
                 // اطلاعات موقعیت (فقط برای حضوری)
@@ -1238,7 +1304,7 @@
         // ریست فرم پس از ارسال موفق
         function resetForm() {
             provinceSelect.selectedIndex = 0;
-            marketerNameInput.value = '';
+            marketerNameSelect.selectedIndex = 0;
             businessTypeSelect.selectedIndex = 0;
             businessNameInput.value = '';
             businessNameEndSelect.innerHTML = '<option value="" selected disabled>لطفاً ابتدا استان را انتخاب کنید</option>';
@@ -1248,6 +1314,8 @@
             managerPhoneInput.value = '';
             vendorSoftwareSelect.selectedIndex = 0;
             negotiationResultSelect.selectedIndex = 0;
+            disinterestReasonContainer.style.display = 'none';
+            disinterestReasonSelect.selectedIndex = 0;
             
             submitBtn.disabled = true;
             getLocationBtn.disabled = false;
@@ -1352,13 +1420,14 @@
                 
                 // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
                 provinceSelect.disabled = true;
-                marketerNameInput.disabled = true;
+                marketerNameSelect.disabled = true;
                 businessTypeSelect.disabled = true;
                 businessNameInput.disabled = true;
                 managerNameInput.disabled = true;
                 managerPhoneInput.disabled = true;
                 vendorSoftwareSelect.disabled = true;
                 negotiationResultSelect.disabled = true;
+                disinterestReasonSelect.disabled = true;
                 startBtn.disabled = true;
                 endBtn.disabled = true;
                 startCameraBtn.disabled = true;
@@ -1378,13 +1447,14 @@
                 
                 // فعال کردن دوباره عناصر
                 provinceSelect.disabled = false;
-                marketerNameInput.disabled = false;
+                marketerNameSelect.disabled = false;
                 businessTypeSelect.disabled = false;
                 businessNameInput.disabled = false;
                 managerNameInput.disabled = false;
                 managerPhoneInput.disabled = false;
                 vendorSoftwareSelect.disabled = false;
                 negotiationResultSelect.disabled = false;
+                disinterestReasonSelect.disabled = false;
                 startBtn.disabled = false;
                 endBtn.disabled = false;
                 startCameraBtn.disabled = false;
