@@ -559,35 +559,6 @@
             }
         }
         
-        .time-restriction-info {
-            background-color: #fff9db;
-            border-left: 4px solid #f59f00;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .time-restriction-info.show {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-        
-        .time-restriction-info i {
-            margin-left: 5px;
-            color: #f59f00;
-        }
-        
-        .time-restriction-info ul {
-            margin: 10px 0 0 20px;
-            list-style-type: disc;
-        }
-        
-        .time-restriction-info li {
-            margin-bottom: 5px;
-        }
-        
         .system-disabled-overlay {
             position: absolute;
             top: 0;
@@ -689,10 +660,6 @@
                         <i class="fas fa-flag-checkered"></i>
                         <span>پایان مذاکره</span>
                     </button>
-                    <button class="request-type-btn" id="presence-btn" data-type="presence">
-                        <i class="fas fa-user-check"></i>
-                        <span>ثبت حضور</span>
-                    </button>
                 </div>
             </div>
             
@@ -720,6 +687,13 @@
                         <option value="اصفهان">اصفهان</option>
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                
+                <!-- نام بازاریاب -->
+                <div class="input-group">
+                    <label for="marketer-name"><i class="fas fa-user-tie"></i> نام بازاریاب</label>
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="marketer-name" placeholder="نام بازاریاب را وارد نمایید...">
                 </div>
                 
                 <!-- نوع مجموعه -->
@@ -809,32 +783,17 @@
                     <i class="fas fa-chart-line"></i>
                     <select id="negotiation-result">
                         <option value="" selected disabled>نتیجه مذاکره را انتخاب کنید</option>
-                        <option value="کامل">کامل</option>
-                        <option value="ناقص">ناقص</option>
-                        <option value="مذاکره مجدد">مذاکره مجدد</option>
-                        <option value="عدم حضور">عدم حضور</option>
-                        <option value="تعطیلی">تعطیلی</option>
-                        <option value="تعطیلی موقت">تعطیلی موقت</option>
-                        <option value="استور">استور</option>
+                        <option value="قرارداد به صورت کامل بسته شد">قرارداد به صورت کامل بسته شد</option>
+                        <option value="(قرارداد ناقص بسته شد(عدم تکمیل قرارداد یا عدم پرداخت موفق)">قرارداد ناقص بسته شد(عدم تکمیل قرارداد یا عدم پرداخت موفق</option>
+                        <option value="نیاز به مذاکره مجدد">نیاز به مذاکره مجدد</option>
+                        <option value="عدم حضور مدیریت">عدم حضور مدیریت</option>
+                        <option value="تعطیلی دائم">تعطیلی دائم</option>
+                        <option value="تعطیلی موقت(تعمیرات، تغییرات آدرس، ...)">تعطیلی موقت(تعمیرات، تغییرات آدرس، ...)</option>
+                        <option value="نرم افزار استور را نصب دارد">نرم افزار استور را نصب دارد</option>
                         <option value="عدم تمایل">عدم تمایل</option>
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
-            </div>
-            
-            <!-- اطلاعات محدودیت زمانی ثبت حضور -->
-            <div id="time-restriction" class="time-restriction-info">
-                <p><i class="fas fa-info-circle"></i> ثبت حضور فقط در بازه‌های زمانی زیر فعال است:</p>
-                <ul>
-                    <li>8:00 - 8:30</li>
-                    <li>10:00 - 10:30</li>
-                    <li>12:00 - 12:30</li>
-                    <li>14:00 - 14:30</li>
-                    <li>16:00 - 16:30</li>
-                    <li>18:00 - 18:30</li>
-                    <li>20:00 - 20:30</li>
-                    <li>22:00 - 22:30</li>
-                </ul>
             </div>
             
             <div class="section-divider"></div>
@@ -906,6 +865,7 @@
     <script>
         // عناصر DOM
         const provinceSelect = document.getElementById('province');
+        const marketerNameInput = document.getElementById('marketer-name');
         const businessTypeContainer = document.getElementById('business-type-container');
         const businessTypeSelect = document.getElementById('business-type');
         const businessNameContainer = document.getElementById('business-name-container');
@@ -921,7 +881,6 @@
         const managerPhoneInput = document.getElementById('manager-phone');
         const startBtn = document.getElementById('start-btn');
         const endBtn = document.getElementById('end-btn');
-        const presenceBtn = document.getElementById('presence-btn');
         const startCameraBtn = document.getElementById('start-camera');
         const captureBtn = document.getElementById('capture-btn');
         const cameraFeed = document.getElementById('camera-feed');
@@ -933,7 +892,6 @@
         const confettiElement = document.getElementById('confetti');
         const rotateCameraBtn = document.getElementById('rotate-camera');
         const getLocationBtn = document.getElementById('get-location-btn');
-        const timeRestrictionInfo = document.getElementById('time-restriction');
         const systemDisabledOverlay = document.getElementById('system-disabled-overlay');
         const telToggle = document.getElementById('tel-toggle');
         const inPersonToggle = document.getElementById('in-person-toggle');
@@ -946,23 +904,11 @@
         let stream = null;
         let locationData = null;
         let currentCameraMode = "environment"; // حالت پیش‌فرض دوربین عقب
-        let currentRequestType = null; // 'start', 'end', 'presence'
+        let currentRequestType = null; // 'start', 'end'
         let negotiationType = "in-person"; // 'tel' or 'in-person'
         let user = null;
         let businessList = [];
         let usingManualInput = false;
-        
-        // بازه‌های زمانی مجاز برای ثبت حضور
-        const allowedTimeSlots = [
-            { start: { hour: 8, minute: 0 }, end: { hour: 8, minute: 30 } },
-            { start: { hour: 10, minute: 0 }, end: { hour: 10, minute: 30 } },
-            { start: { hour: 12, minute: 0 }, end: { hour: 12, minute: 30 } },
-            { start: { hour: 14, minute: 0 }, end: { hour: 14, minute: 30 } },
-            { start: { hour: 16, minute: 0 }, end: { hour: 16, minute: 30 } },
-            { start: { hour: 18, minute: 0 }, end: { hour: 18, minute: 30 } },
-            { start: { hour: 20, minute: 0 }, end: { hour: 20, minute: 30 } },
-            { start: { hour: 22, minute: 0 }, end: { hour: 22, minute: 30 } }
-        ];
         
         // تابع برای به‌روزرسانی نام مجموعه‌ها
         function updateBusinessNames() {
@@ -978,7 +924,6 @@
             businessTypeContainer.style.display = 'none';
             businessNameContainer.style.display = 'none';
             endNegotiationSection.style.display = 'none';
-            timeRestrictionInfo.style.display = 'none';
             businessNameEndContainer.style.display = 'none';
             manualInputContainer.style.display = 'none';
             
@@ -991,32 +936,28 @@
                 businessNameEndContainer.style.display = 'block';
                 // به‌روزرسانی لیست نام مجموعه‌ها
                 updateBusinessNames();
-            } else if (currentRequestType === 'presence') {
-                timeRestrictionInfo.style.display = 'block';
             }
             
-            // نمایش دوربین و موقعیت‌یابی فقط برای مذاکرات حضوری
-            if (negotiationType === 'in-person') {
+            // نمایش دوربین فقط برای مذاکرات حضوری شروع
+            if (negotiationType === 'in-person' && currentRequestType === 'start') {
                 cameraSection.style.display = 'block';
-                locationSection.style.display = 'block';
             } else {
                 cameraSection.style.display = 'none';
-                locationSection.style.display = 'none';
             }
+            
+            // نمایش موقعیت‌یابی برای مذاکرات حضوری
+            locationSection.style.display = negotiationType === 'in-person' ? 'block' : 'none';
         }
         
         // تنظیم وضعیت دکمه‌های انتخاب نوع درخواست
         function setActiveRequestType(type) {
             startBtn.classList.remove('active');
             endBtn.classList.remove('active');
-            presenceBtn.classList.remove('active');
             
             if (type === 'start') {
                 startBtn.classList.add('active');
             } else if (type === 'end') {
                 endBtn.classList.add('active');
-            } else if (type === 'presence') {
-                presenceBtn.classList.add('active');
             }
         }
         
@@ -1031,13 +972,6 @@
         endBtn.addEventListener('click', () => {
             currentRequestType = 'end';
             setActiveRequestType('end');
-            updateFormFields();
-            submitBtn.disabled = false;
-        });
-        
-        presenceBtn.addEventListener('click', () => {
-            currentRequestType = 'presence';
-            setActiveRequestType('presence');
             updateFormFields();
             submitBtn.disabled = false;
         });
@@ -1148,27 +1082,6 @@
             }
         }
         
-        // تابع برای بررسی محدودیت زمانی ثبت حضور
-        function isWithinAllowedTime() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            
-            // تبدیل زمان فعلی به دقیقه برای مقایسه آسان
-            const currentTotalMinutes = currentHour * 60 + currentMinute;
-            
-            for (const slot of allowedTimeSlots) {
-                const startTotalMinutes = slot.start.hour * 60 + slot.start.minute;
-                const endTotalMinutes = slot.end.hour * 60 + slot.end.minute;
-                
-                if (currentTotalMinutes >= startTotalMinutes && currentTotalMinutes < endTotalMinutes) {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
         // تابع برای بررسی زمان غیرفعال (00:30 تا 5:30)
         function isInDisabledTime() {
             const now = new Date();
@@ -1177,7 +1090,7 @@
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
             // بازه غیرفعال: از 00:30 تا 5:30
-            const disableStart = 4 * 60 + 30; // 00:30 (30 دقیقه)
+            const disableStart = 4 * 60 + 30; // 4:30 (30 دقیقه)
             const disableEnd = 5 * 60 + 30;   // 5:30 (330 دقیقه)
             
             // اگر زمان فعلی بین 00:30 تا 5:30 باشد
@@ -1192,6 +1105,12 @@
             // اعتبارسنجی استان
             if (!provinceSelect.value) {
                 showStatus('لطفاً استان خود را انتخاب کنید', 'error');
+                return false;
+            }
+            
+            // اعتبارسنجی نام بازاریاب
+            if (!marketerNameInput.value.trim()) {
+                showStatus('لطفاً نام بازاریاب را وارد کنید', 'error');
                 return false;
             }
             
@@ -1232,8 +1151,6 @@
                     showStatus('لطفاً نتیجه مذاکره را انتخاب کنید', 'error');
                     return false;
                 }
-            } else if (currentRequestType === 'presence') {
-                // فقط نیاز به استان و موقعیت دارد
             }
             
             return true;
@@ -1251,15 +1168,6 @@
                 return;
             }
             
-            // اعتبارسنجی زمان ثبت حضور
-            if (currentRequestType === 'presence' && !isWithinAllowedTime()) {
-                const now = new Date();
-                const currentTime = now.toLocaleTimeString('fa-IR');
-                
-                showStatus(`ثبت حضور فقط در بازه‌های زمانی مشخص امکان‌پذیر است. زمان فعلی: ${currentTime}`, 'error');
-                return;
-            }
-            
             showStatus('در حال ارسال اطلاعات به سرور...', 'processing');
             submitBtn.disabled = true;
             
@@ -1271,6 +1179,7 @@
                 const params = new URLSearchParams();
                 params.append('entry.56597741', provinceSelect.value); // استان
                 params.append('entry.400737767', negotiationType); // نوع مذاکره
+                params.append('entry.123456789', marketerNameInput.value.trim()); // نام بازاریاب
                 
                 // اطلاعات بر اساس نوع درخواست
                 if (currentRequestType === 'start') {
@@ -1287,9 +1196,6 @@
                     params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
                     params.append('entry.573458779', negotiationResultSelect.value); // نتیجه مذاکره
                     params.append('entry.145698669', 'پایان مذاکره'); // نوع درخواست
-
-                } else if (currentRequestType === 'presence') {
-                    params.append('entry.145698669', 'ثبت حضور'); // نوع درخواست
 
                 }
                 
@@ -1331,6 +1237,7 @@
         // ریست فرم پس از ارسال موفق
         function resetForm() {
             provinceSelect.selectedIndex = 0;
+            marketerNameInput.value = '';
             businessTypeSelect.selectedIndex = 0;
             businessNameInput.value = '';
             businessNameEndSelect.innerHTML = '<option value="" selected disabled>لطفاً ابتدا استان را انتخاب کنید</option>';
@@ -1364,7 +1271,6 @@
             // ریست نوع درخواست
             startBtn.classList.remove('active');
             endBtn.classList.remove('active');
-            presenceBtn.classList.remove('active');
             currentRequestType = null;
             updateFormFields();
         }
@@ -1445,6 +1351,7 @@
                 
                 // غیرفعال کردن تمام دکمه‌ها و عناصر ورودی
                 provinceSelect.disabled = true;
+                marketerNameInput.disabled = true;
                 businessTypeSelect.disabled = true;
                 businessNameInput.disabled = true;
                 managerNameInput.disabled = true;
@@ -1453,7 +1360,6 @@
                 negotiationResultSelect.disabled = true;
                 startBtn.disabled = true;
                 endBtn.disabled = true;
-                presenceBtn.disabled = true;
                 startCameraBtn.disabled = true;
                 captureBtn.disabled = true;
                 getLocationBtn.disabled = true;
@@ -1471,6 +1377,7 @@
                 
                 // فعال کردن دوباره عناصر
                 provinceSelect.disabled = false;
+                marketerNameInput.disabled = false;
                 businessTypeSelect.disabled = false;
                 businessNameInput.disabled = false;
                 managerNameInput.disabled = false;
@@ -1479,7 +1386,6 @@
                 negotiationResultSelect.disabled = false;
                 startBtn.disabled = false;
                 endBtn.disabled = false;
-                presenceBtn.disabled = false;
                 startCameraBtn.disabled = false;
                 captureBtn.disabled = true;
                 getLocationBtn.disabled = false;
