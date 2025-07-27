@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه مدیریت مذاکرات | نسخه نهایی</title>
+    <title>سامانه مدیریت مذاکرات | نسخه اصلاح شده</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
@@ -626,6 +626,41 @@
             font-size: 16px;
             background-color: white;
         }
+        
+        /* استایل جدید برای فیلد نرم افزار دیگر */
+        .other-software-container {
+            display: none;
+            margin-top: 15px;
+            animation: fadeIn 0.5s;
+        }
+        
+        .other-software-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .other-software-container input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        /* استایل برای اعتبارسنجی ناموفق */
+        .input-error {
+            border-color: #e74c3c !important;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -663,8 +698,8 @@
             <!-- سوئیچ نوع مذاکره -->
             <div class="negotiation-type-toggle">
                 <div class="toggle-container">
-                    <div class="toggle-label" id="tel-toggle" data-type="tel">تلفنی</div>
-                    <div class="toggle-label active" id="in-person-toggle" data-type="in-person">حضوری</div>
+                    <div class="toggle-label" id="tel-toggle" data-type="تلفنی">تلفنی</div>
+                    <div class="toggle-label active" id="in-person-toggle" data-type="حضوری">حضوری</div>
                     <div class="toggle-slider"></div>
                 </div>
             </div>
@@ -784,7 +819,8 @@
                 <div class="input-group">
                     <label for="manager-phone"><i class="fas fa-phone-alt"></i> شماره تماس مدیریت</label>
                     <i class="fas fa-mobile-alt"></i>
-                    <input type="text" id="manager-phone" placeholder="شماره تماس را وارد نمایید...">
+                    <input type="text" id="manager-phone" placeholder="شماره تماس را وارد نمایید..." maxlength="11">
+                    <div class="error-message" id="phone-error">شماره تماس باید 11 رقمی و فقط شامل عدد باشد</div>
                 </div>
                 
                 <!-- نرم افزار فعلی -->
@@ -807,6 +843,12 @@
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
                 
+                <!-- فیلد نام نرم افزار در صورت انتخاب "سایر" -->
+                <div class="other-software-container" id="other-software-container">
+                    <label for="other-software-name"><i class="fas fa-laptop"></i> نام نرم افزار</label>
+                    <input type="text" id="other-software-name" placeholder="نام نرم افزار را وارد نمایید...">
+                </div>
+                
                 <!-- نتیجه مذاکره -->
                 <div class="input-group">
                     <label for="negotiation-result"><i class="fas fa-poll"></i> نتیجه مذاکره</label>
@@ -825,7 +867,7 @@
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
                 
-                <!-- بخش دلایل عدم تمایل (جدید) -->
+                <!-- بخش دلایل عدم تمایل -->
                 <div class="disinterest-reason-container" id="disinterest-reason-container">
                     <label for="disinterest-reason"><i class="fas fa-exclamation-circle"></i> دلیل عدم تمایل</label>
                     <select id="disinterest-reason">
@@ -919,11 +961,14 @@
         const manualBusinessNameInput = document.getElementById('manual-business-name');
         const endNegotiationSection = document.getElementById('end-negotiation-section');
         const vendorSoftwareSelect = document.getElementById('vendor-software');
+        const otherSoftwareContainer = document.getElementById('other-software-container');
+        const otherSoftwareNameInput = document.getElementById('other-software-name');
         const negotiationResultSelect = document.getElementById('negotiation-result');
         const disinterestReasonContainer = document.getElementById('disinterest-reason-container');
         const disinterestReasonSelect = document.getElementById('disinterest-reason');
         const managerNameInput = document.getElementById('manager-name');
         const managerPhoneInput = document.getElementById('manager-phone');
+        const phoneError = document.getElementById('phone-error');
         const startBtn = document.getElementById('start-btn');
         const endBtn = document.getElementById('end-btn');
         const startCameraBtn = document.getElementById('start-camera');
@@ -950,7 +995,7 @@
         let locationData = null;
         let currentCameraMode = "environment"; // حالت پیش‌فرض دوربین عقب
         let currentRequestType = null; // 'start', 'end'
-        let negotiationType = "in-person"; // 'tel' or 'in-person'
+        let negotiationType = "حضوری"; // 'تلفنی' or 'حضوری'
         let user = null;
         let businessList = [];
         let usingManualInput = false;
@@ -964,6 +1009,47 @@
                 disinterestReasonSelect.selectedIndex = 0;
             }
         });
+        
+        // مدیریت نمایش فیلد نرم افزار دیگر
+        vendorSoftwareSelect.addEventListener('change', function() {
+            if (this.value === "سایر") {
+                otherSoftwareContainer.style.display = 'block';
+            } else {
+                otherSoftwareContainer.style.display = 'none';
+                otherSoftwareNameInput.value = '';
+            }
+        });
+        
+        // اعتبارسنجی شماره موبایل
+        managerPhoneInput.addEventListener('input', function() {
+            // حذف کاراکترهای غیرعددی
+            this.value = this.value.replace(/\D/g, '');
+            
+            // اعتبارسنجی شماره موبایل
+            validatePhone();
+        });
+        
+        function validatePhone() {
+            const phone = managerPhoneInput.value;
+            
+            // بررسی طول شماره
+            if (phone.length !== 11) {
+                managerPhoneInput.classList.add('input-error');
+                phoneError.style.display = 'block';
+                return false;
+            }
+            
+            // بررسی اینکه فقط عدد است
+            if (!/^\d+$/.test(phone)) {
+                managerPhoneInput.classList.add('input-error');
+                phoneError.style.display = 'block';
+                return false;
+            }
+            
+            managerPhoneInput.classList.remove('input-error');
+            phoneError.style.display = 'none';
+            return true;
+        }
         
         // تابع برای به‌روزرسانی نام مجموعه‌ها
         function updateBusinessNames() {
@@ -982,6 +1068,7 @@
             businessNameEndContainer.style.display = 'none';
             manualInputContainer.style.display = 'none';
             disinterestReasonContainer.style.display = 'none';
+            otherSoftwareContainer.style.display = 'none';
             
             // نمایش فیلدهای بر اساس نوع درخواست
             if (currentRequestType === 'start') {
@@ -995,14 +1082,14 @@
             }
             
             // نمایش دوربین فقط برای مذاکرات حضوری شروع
-            if (negotiationType === 'in-person' && currentRequestType === 'start') {
+            if (negotiationType === 'حضوری' && currentRequestType === 'start') {
                 cameraSection.style.display = 'block';
             } else {
                 cameraSection.style.display = 'none';
             }
             
             // نمایش موقعیت‌یابی برای مذاکرات حضوری
-            locationSection.style.display = negotiationType === 'in-person' ? 'block' : 'none';
+            locationSection.style.display = negotiationType === 'حضوری' ? 'block' : 'none';
         }
         
         // تنظیم وضعیت دکمه‌های انتخاب نوع درخواست
@@ -1034,14 +1121,14 @@
         
         // مدیریت سوئیچ نوع مذاکره
         telToggle.addEventListener('click', () => {
-            negotiationType = 'tel';
+            negotiationType = 'تلفنی';
             telToggle.classList.add('active');
             inPersonToggle.classList.remove('active');
             updateFormFields();
         });
         
         inPersonToggle.addEventListener('click', () => {
-            negotiationType = 'in-person';
+            negotiationType = 'حضوری';
             inPersonToggle.classList.add('active');
             telToggle.classList.remove('active');
             updateFormFields();
@@ -1193,13 +1280,20 @@
                     return false;
                 }
                 
-                if (!managerPhoneInput.value.trim()) {
-                    showStatus('لطفاً شماره تماس مدیریت را وارد کنید', 'error');
+                // اعتبارسنجی شماره موبایل
+                if (!validatePhone()) {
+                    showStatus('شماره تماس باید 11 رقمی و فقط شامل عدد باشد', 'error');
                     return false;
                 }
                 
                 if (!vendorSoftwareSelect.value) {
                     showStatus('لطفاً نرم‌افزار فعلی را انتخاب کنید', 'error');
+                    return false;
+                }
+                
+                // اگر "سایر" انتخاب شده و فیلد نام نرم افزار خالی است
+                if (vendorSoftwareSelect.value === "سایر" && !otherSoftwareNameInput.value.trim()) {
+                    showStatus('لطفاً نام نرم افزار را وارد کنید', 'error');
                     return false;
                 }
                 
@@ -1225,7 +1319,7 @@
                 return;
             }
             
-            if (negotiationType === 'in-person' && !locationData) {
+            if (negotiationType === 'حضوری' && !locationData) {
                 showStatus('لطفاً موقعیت جغرافیایی را دریافت کنید', 'error');
                 return;
             }
@@ -1255,7 +1349,14 @@
                     params.append('entry.475047817', businessName); // نام مجموعه
                     params.append('entry.632146796', managerNameInput.value.trim()); // نام مدیریت
                     params.append('entry.1208820368', managerPhoneInput.value.trim()); // شماره تماس مدیریت
-                    params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
+                    
+                    // نرم افزار فعلی - اگر "سایر" انتخاب شده، از فیلد دیگر استفاده شود
+                    let softwareValue = vendorSoftwareSelect.value;
+                    if (vendorSoftwareSelect.value === "سایر") {
+                        softwareValue = otherSoftwareNameInput.value.trim();
+                    }
+                    params.append('entry.2112447463', softwareValue); // نرم‌افزار فعلی
+                    
                     params.append('entry.573458779', negotiationResultSelect.value); // نتیجه مذاکره
                     params.append('entry.145698669', 'پایان مذاکره'); // نوع درخواست
                     params.append('entry.1236889664', marketerNameSelect.value); // نام بازاریاب
@@ -1267,7 +1368,7 @@
                 }
                 
                 // اطلاعات موقعیت (فقط برای حضوری)
-                if (negotiationType === 'in-person') {
+                if (negotiationType === 'حضوری') {
                     params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
                     params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
                     params.append('entry.555772584', locationData.accuracy); // دقت
@@ -1313,6 +1414,8 @@
             managerNameInput.value = '';
             managerPhoneInput.value = '';
             vendorSoftwareSelect.selectedIndex = 0;
+            otherSoftwareContainer.style.display = 'none';
+            otherSoftwareNameInput.value = '';
             negotiationResultSelect.selectedIndex = 0;
             disinterestReasonContainer.style.display = 'none';
             disinterestReasonSelect.selectedIndex = 0;
