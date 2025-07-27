@@ -1179,13 +1179,14 @@
                 const params = new URLSearchParams();
                 params.append('entry.56597741', provinceSelect.value); // استان
                 params.append('entry.400737767', negotiationType); // نوع مذاکره
-                params.append('entry.123456789', marketerNameInput.value.trim()); // نام بازاریاب
+                params.append('entry.1236889664', marketerNameInput.value.trim()); // نام بازاریاب
                 
                 // اطلاعات بر اساس نوع درخواست
                 if (currentRequestType === 'start') {
                     params.append('entry.367554561', businessTypeSelect.value); // نوع مجموعه
                     params.append('entry.475047817', businessNameInput.value.trim()); // نام مجموعه
                     params.append('entry.145698669', 'شروع مذاکره'); // نوع درخواست
+                    params.append('entry.1236889664', marketerNameInput.value.trim()); // نام بازاریاب
 
                 } else if (currentRequestType === 'end') {
                     // استفاده از نام مجموعه از لیست یا ورود دستی
@@ -1196,6 +1197,7 @@
                     params.append('entry.2112447463', vendorSoftwareSelect.value); // نرم‌افزار فعلی
                     params.append('entry.573458779', negotiationResultSelect.value); // نتیجه مذاکره
                     params.append('entry.145698669', 'پایان مذاکره'); // نوع درخواست
+                    params.append('entry.1236889664', marketerNameInput.value.trim()); // نام بازاریاب
 
                 }
                 
