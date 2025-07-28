@@ -1582,65 +1582,108 @@
             userInfo.style.display = 'block';
             document.querySelector('.g_id_signin').style.display = 'none';
         }
-        
-        // بارگذاری نام مجموعه‌ها بر اساس استان
-        async function loadBusinessNames(province) {
-            try {
-                showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
-                
-                // اصلاح URL و افزودن پارامتر province
-                const url = `https://script.google.com/macros/s/AKfycbzduQwcvPzXrKG_wesMxt6Me-BiEFhFdZJE1mnR-tdka6fw4c-7IzmOaNflvYEWnOIuYA/exec?province=${encodeURIComponent(province)}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`خطای HTTP: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('داده دریافتی:', data);
-                
-                let businessNames = [];
-                if (data.status === "success" && Array.isArray(data.data)) {
-                    businessNames = data.data.map(item => item.name);
-                } else if (Array.isArray(data)) {
-                    // پشتیبانی از ساختار قدیمی
-                    businessNames = data.map(item => item.name);
-                } else {
-                    throw new Error('ساختار داده نامعتبر است');
-                }
-                
-                if (businessNames.length === 0) {
-                    throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
-                }
-                
-                businessList = businessNames;
-                businessNameEndSelect.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
-                
-                businessNames.forEach(business => {
-                    const option = document.createElement('option');
-                    option.value = business;
-                    option.textContent = business;
-                    businessNameEndSelect.appendChild(option);
-                });
-                
-                // افزودن گزینه ورود دستی
-                const manualOption = document.createElement('option');
-                manualOption.value = "manual";
-                manualOption.textContent = "ورود دستی نام مجموعه";
-                businessNameEndSelect.appendChild(manualOption);
-                
-                showStatus('لیست مجموعه‌ها دریافت شد', 'success');
-                
-            } catch (error) {
-                showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
-                console.error('خطای دریافت لیست:', error);
-                
-                businessNameEndSelect.innerHTML = `
-                    <option value="" selected disabled>خطا در دریافت لیست</option>
-                    <option value="manual">ورود دستی نام مجموعه</option>
-                `;
-            }
-        }
+        // --- تنظیمات ---
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzduQwcvPzXrKG_wesMxt6Me-BiEFhFdZJE1mnR-tdka6fw4c-7IzmOaNflvYEWnOIuYA/exec';
+
+// Collator برای مرتب‌سازی حروف فارسی (اختیاری ولی پیشنهاد می‌شود)
+const faCollator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
+
+// --- توابع کمکی ---
+function normalizeGASResponse(raw) {
+  // پشتیبانی از سه شکل مختلف خروجی:
+  // 1) { success: true, data: [...] }
+  // 2) { status: "success", data: [...] }
+  // 3) [ ... ]
+  // خروجی نهایی: Array<{ name: string, province: string }>
+  if (Array.isArray(raw)) {
+    return raw;
+  }
+
+  if (raw && typeof raw === 'object') {
+    const ok =
+      raw.success === true ||
+      (typeof raw.status === 'string' && raw.status.toLowerCase() === 'success');
+
+    if (ok && Array.isArray(raw.data)) {
+      return raw.data;
+    }
+  }
+
+  // اگر به اینجا رسیدیم یعنی ساختار غیرمنتظره است
+  throw new Error('ساختار داده نامعتبر است');
+}
+
+function fillBusinessSelect(selectEl, businessNames) {
+  selectEl.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
+
+  businessNames.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    selectEl.appendChild(option);
+  });
+
+  // گزینه «ورود دستی»
+  const manualOption = document.createElement('option');
+  manualOption.value = 'manual';
+  manualOption.textContent = 'ورود دستی نام مجموعه';
+  selectEl.appendChild(manualOption);
+}
+
+// --- تابع اصلی جایگزین ---
+async function loadBusinessNames(province = 'all') {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  try {
+    showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
+
+    const params = new URLSearchParams({ province });
+    const url = `${GAS_URL}?${params.toString()}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const raw = await response.json();
+    console.log('داده دریافتی خام:', raw);
+
+    const items = normalizeGASResponse(raw); // [{name, province}, ...]
+    let businessNames = items
+      .map(i => i && i.name)
+      .filter(Boolean);
+
+    // حذف موارد تکراری و مرتب‌سازی
+    businessNames = Array.from(new Set(businessNames)).sort(faCollator.compare);
+
+    if (businessNames.length === 0) {
+      throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
+    }
+
+    // فرض: این‌ها قبلاً در اسکوپ شما تعریف شده‌اند
+    businessList = businessNames;
+    fillBusinessSelect(businessNameEndSelect, businessNames);
+
+    showStatus('لیست مجموعه‌ها دریافت شد', 'success');
+  } catch (error) {
+    console.error('خطا در دریافت لیست:', error);
+    showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
+
+    // در صورت خطا، فقط گزینه ورود دستی را بگذار
+    businessNameEndSelect.innerHTML = `
+      <option value="" selected disabled>خطا در دریافت لیست</option>
+      <option value="manual">ورود دستی نام مجموعه</option>
+    `;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
         
         // نمایش فیلد ورود دستی نام مجموعه
         businessNameEndSelect.addEventListener('change', function() {
