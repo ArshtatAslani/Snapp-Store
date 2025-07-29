@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه مدیریت مذاکرات | نسخه اصلاح شده</title>
+    <title>سامانه مدیریت مذاکرات | اسنپ استور </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
@@ -552,7 +552,6 @@
             width: 100%;
         }
         
-        /* استایل جدید برای بخش دلایل عدم تمایل */
         .disinterest-reason-container {
             display: none;
             margin-top: 15px;
@@ -575,7 +574,6 @@
             background-color: white;
         }
         
-        /* استایل جدید برای فیلد نرم افزار دیگر */
         .other-software-container {
             display: none;
             margin-top: 15px;
@@ -597,7 +595,6 @@
             width: 100%;
         }
         
-        /* استایل برای اعتبارسنجی ناموفق */
         .input-error {
             border-color: #e74c3c !important;
             box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2) !important;
@@ -610,7 +607,6 @@
             display: none;
         }
         
-        /* استایل جدید برای راهنمای انتخاب نام مجموعه */
         .info-badge {
             background-color: #e3f2fd;
             border-left: 4px solid #1a2980;
@@ -924,7 +920,7 @@
                 Dev by:<br>
                 Snapp North Zone Sales HQ<br>
                 تیم فروش شمال کشور<br>
-                💎</span>
+                💎
             </div>
         </div>
     </div>
@@ -1198,8 +1194,8 @@
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
             // بازه غیرفعال: از 00:30 تا 5:30
-            const disableStart = 5 * 60 + 30; // 4:30 (30 دقیقه)
-            const disableEnd = 6 * 60 + 30;   // 5:30 (330 دقیقه)
+            const disableStart = 0 * 60 + 30; // 00:30
+            const disableEnd = 5 * 60 + 30;   // 05:30
             
             // اگر زمان فعلی بین 00:30 تا 5:30 باشد
             if (currentTotalMinutes >= disableStart && currentTotalMinutes < disableEnd) {
@@ -1312,7 +1308,6 @@
                     params.append('entry.475047817', businessNameInput.value.trim()); // نام مجموعه
                     params.append('entry.145698669', 'شروع مذاکره'); // نوع درخواست
                     params.append('entry.1236889664', marketerNameSelect.value); // نام بازاریاب
-
                 } else if (currentRequestType === 'end') {
                     // استفاده از نام مجموعه از لیست یا ورود دستی
                     let businessName;
@@ -1558,7 +1553,7 @@
         }
         
         // --- تنظیمات ---
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyYyDDbd7bSeVvshB8PwFH4ZIU7ws0J1T_UOpxfvhZd9-VQEQwlNxYjKS_tiWGCPUNAjg/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvjFkfUbLEzSg5goKFrPseaG3ZvzDKuVR0nGdlIAst6GvnXa_Se-L9TJna-iJveUzi_Q/exec'; // URL جدید Web App را اینجا قرار دهید
         
         // Collator برای مرتب‌سازی حروف فارسی
         const faCollator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
@@ -1599,57 +1594,71 @@
             selectEl.appendChild(manualOption);
         }
         
-        // --- تابع اصلی جایگزین ---
-        async function loadBusinessNames(province = 'all') {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-        
-            try {
+        // --- تابع اصلی برای بارگذاری نام مجموعه‌ها با JSONP ---
+        function loadBusinessNames(province = 'all') {
+            return new Promise((resolve, reject) => {
                 showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
-        
-                const params = new URLSearchParams({ province });
+
+                const callbackName = 'jsonpCallback_' + Math.random().toString(36).slice(2);
+                window[callbackName] = function(response) {
+                    // پاک کردن callback بعد از استفاده
+                    delete window[callbackName];
+                    document.getElementById('jsonpScript')?.remove();
+
+                    try {
+                        console.log('داده دریافتی خام:', response);
+                        const items = normalizeGASResponse(response);
+                        let businessNames = items
+                            .map(i => i && i.name)
+                            .filter(Boolean);
+
+                        businessNames = Array.from(new Set(businessNames)).sort(faCollator.compare);
+
+                        businessList = businessNames;
+                        console.log('لیست نام‌های مجموعه:', businessNames);
+
+                        if (businessNames.length === 0) {
+                            businessNameEndSelect.innerHTML = `
+                                <option value="" selected disabled>هیچ مجموعه‌ای یافت نشد</option>
+                                <option value="manual">ورود دستی نام مجموعه</option>
+                            `;
+                            showStatus('هیچ مجموعه‌ای برای این استان یافت نشد. لطفاً از گزینه ورود دستی استفاده کنید.', 'error');
+                        } else {
+                            fillBusinessSelect(businessNameEndSelect, businessNames);
+                            showStatus('لیست مجموعه‌ها دریافت شد', 'success');
+                        }
+                        resolve(businessNames);
+                    } catch (error) {
+                        console.error('خطا در پردازش پاسخ JSONP:', error);
+                        showStatus(`خطا در دریافت لیست مجموعه‌ها: ${error.message}`, 'error');
+                        businessNameEndSelect.innerHTML = `
+                            <option value="" selected disabled>خطا در دریافت لیست</option>
+                            <option value="manual">ورود دستی نام مجموعه</option>
+                        `;
+                        reject(error);
+                    }
+                };
+
+                const params = new URLSearchParams({ province, callback: callbackName });
                 const url = `${GAS_URL}?${params.toString()}`;
-        
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    signal: controller.signal
-                });
-        
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-        
-                const raw = await response.json();
-                console.log('داده دریافتی خام:', raw);
-        
-                const items = normalizeGASResponse(raw);
-                let businessNames = items
-                    .map(i => i && i.name)
-                    .filter(Boolean);
-        
-                // حذف موارد تکراری و مرتب‌سازی
-                businessNames = Array.from(new Set(businessNames)).sort(faCollator.compare);
-        
-                if (businessNames.length === 0) {
-                    throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
-                }
-        
-                businessList = businessNames;
-                fillBusinessSelect(businessNameEndSelect, businessNames);
-        
-                showStatus('لیست مجموعه‌ها دریافت شد', 'success');
-            } catch (error) {
-                console.error('خطا در دریافت لیست:', error);
-                showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
-        
-                businessNameEndSelect.innerHTML = `
-                    <option value="" selected disabled>خطا در دریافت لیست</option>
-                    <option value="manual">ورود دستی نام مجموعه</option>
-                `;
-            } finally {
-                clearTimeout(timeoutId);
-            }
+                console.log('در حال ارسال درخواست JSONP به:', url);
+
+                const script = document.createElement('script');
+                script.id = 'jsonpScript';
+                script.src = url;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    document.getElementById('jsonpScript')?.remove();
+                    const errorMessage = 'خطا در بارگذاری اسکریپت JSONP. لطفاً URL سرور یا اتصال اینترنت را بررسی کنید.';
+                    showStatus(`خطا در دریافت لیست مجموعه‌ها: ${errorMessage}`, 'error');
+                    businessNameEndSelect.innerHTML = `
+                        <option value="" selected disabled>خطا در دریافت لیست</option>
+                        <option value="manual">ورود دستی نام مجموعه</option>
+                    `;
+                    reject(new Error(errorMessage));
+                };
+                document.head.appendChild(script);
+            });
         }
         
         // نمایش فیلد ورود دستی نام مجموعه
