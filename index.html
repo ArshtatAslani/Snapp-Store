@@ -609,6 +609,24 @@
             margin-top: 5px;
             display: none;
         }
+        
+        /* استایل جدید برای راهنمای انتخاب نام مجموعه */
+        .info-badge {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1a2980;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-badge i {
+            color: #1a2980;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -687,7 +705,6 @@
                         <option value="قم">قم</option>
                         <option value="البرز">البرز</option>
                         <option value="گلستان">گلستان</option>
-                        
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
                 </div>
@@ -707,7 +724,7 @@
                         <option value="نفیسه قربانی - مشهد">نفیسه قربانی - مشهد</option>
                         <option value="اسما سعیدی کوشا - مشهد">سما سعیدی کوشا - مشهد</option>
                         <option value="مهدی عرفانیان - مشهد">مهدی عرفانیان - مشهد</option>
-                        <option value="رضا راهداری - گرگان">رضا راهداری - گرگان</option>
+                        <option value="رضا راهداری - گرگان">رضا راهداری - گنبدکاووس</option>
                         <option value="فریبرز فهیمی - ساری">فریبرز فهیمی - ساری</option>
                         <option value="مهدی پیلتن - کرج">مهدی پیلتن - کرج</option>
                         <option value="یاسین فاموری - کرج">یاسین فاموری - کرج</option>
@@ -759,6 +776,10 @@
                         <option value="" selected disabled>لطفاً ابتدا استان را انتخاب کنید</option>
                     </select>
                     <span class="select-arrow"><i class="fas fa-chevron-down"></i></span>
+                    <div class="info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        <span>اگر مجموعه در لیست نیست، گزینه "ورود دستی نام مجموعه" را انتخاب کنید</span>
+                    </div>
                 </div>
                 
                 <!-- امکان ورود دستی نام مجموعه -->
@@ -1212,8 +1233,13 @@
                 }
             } else if (currentRequestType === 'end') {
                 // بررسی نام مجموعه (انتخاب از لیست یا ورود دستی)
-                if (!businessNameEndSelect.value && !manualBusinessNameInput.value.trim()) {
-                    showStatus('لطفاً نام مجموعه را انتخاب یا وارد کنید', 'error');
+                if (businessNameEndSelect.value === "manual") {
+                    if (!manualBusinessNameInput.value.trim()) {
+                        showStatus('لطفاً نام مجموعه را وارد کنید', 'error');
+                        return false;
+                    }
+                } else if (!businessNameEndSelect.value) {
+                    showStatus('لطفاً نام مجموعه را انتخاب کنید', 'error');
                     return false;
                 }
                 
@@ -1287,7 +1313,13 @@
 
                 } else if (currentRequestType === 'end') {
                     // استفاده از نام مجموعه از لیست یا ورود دستی
-                    const businessName = businessNameEndSelect.value || manualBusinessNameInput.value.trim();
+                    let businessName;
+                    if (businessNameEndSelect.value === "manual") {
+                        businessName = manualBusinessNameInput.value.trim();
+                    } else {
+                        businessName = businessNameEndSelect.value;
+                    }
+                    
                     params.append('entry.475047817', businessName); // نام مجموعه
                     params.append('entry.632146796', managerNameInput.value.trim()); // نام مدیریت
                     params.append('entry.1208820368', managerPhoneInput.value.trim()); // شماره تماس مدیریت
@@ -1522,113 +1554,108 @@
             userInfo.style.display = 'block';
             document.querySelector('.g_id_signin').style.display = 'none';
         }
+        
         // --- تنظیمات ---
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyYyDDbd7bSeVvshB8PwFH4ZIU7ws0J1T_UOpxfvhZd9-VQEQwlNxYjKS_tiWGCPUNAjg/exec';
-
-// Collator برای مرتب‌سازی حروف فارسی (اختیاری ولی پیشنهاد می‌شود)
-const faCollator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
-
-// --- توابع کمکی ---
-function normalizeGASResponse(raw) {
-  // پشتیبانی از سه شکل مختلف خروجی:
-  // 1) { success: true, data: [...] }
-  // 2) { status: "success", data: [...] }
-  // 3) [ ... ]
-  // خروجی نهایی: Array<{ name: string, province: string }>
-  if (Array.isArray(raw)) {
-    return raw;
-  }
-
-  if (raw && typeof raw === 'object') {
-    const ok =
-      raw.success === true ||
-      (typeof raw.status === 'string' && raw.status.toLowerCase() === 'success');
-
-    if (ok && Array.isArray(raw.data)) {
-      return raw.data;
-    }
-  }
-
-  // اگر به اینجا رسیدیم یعنی ساختار غیرمنتظره است
-  throw new Error('ساختار داده نامعتبر است');
-}
-
-function fillBusinessSelect(selectEl, businessNames) {
-  selectEl.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
-
-  businessNames.forEach(name => {
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = name;
-    selectEl.appendChild(option);
-  });
-
-  // گزینه «ورود دستی»
-  const manualOption = document.createElement('option');
-  manualOption.value = 'manual';
-  manualOption.textContent = 'ورود دستی نام مجموعه';
-  selectEl.appendChild(manualOption);
-}
-
-// --- تابع اصلی جایگزین ---
-async function loadBusinessNames(province = 'all') {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-  try {
-    showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
-
-    const params = new URLSearchParams({ province });
-    const url = `${GAS_URL}?${params.toString()}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: controller.signal
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const raw = await response.json();
-    console.log('داده دریافتی خام:', raw);
-
-    const items = normalizeGASResponse(raw); // [{name, province}, ...]
-    let businessNames = items
-      .map(i => i && i.name)
-      .filter(Boolean);
-
-    // حذف موارد تکراری و مرتب‌سازی
-    businessNames = Array.from(new Set(businessNames)).sort(faCollator.compare);
-
-    if (businessNames.length === 0) {
-      throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
-    }
-
-    // فرض: این‌ها قبلاً در اسکوپ شما تعریف شده‌اند
-    businessList = businessNames;
-    fillBusinessSelect(businessNameEndSelect, businessNames);
-
-    showStatus('لیست مجموعه‌ها دریافت شد', 'success');
-  } catch (error) {
-    console.error('خطا در دریافت لیست:', error);
-    showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
-
-    // در صورت خطا، فقط گزینه ورود دستی را بگذار
-    businessNameEndSelect.innerHTML = `
-      <option value="" selected disabled>خطا در دریافت لیست</option>
-      <option value="manual">ورود دستی نام مجموعه</option>
-    `;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyYyDDbd7bSeVvshB8PwFH4ZIU7ws0J1T_UOpxfvhZd9-VQEQwlNxYjKS_tiWGCPUNAjg/exec';
+        
+        // Collator برای مرتب‌سازی حروف فارسی
+        const faCollator = new Intl.Collator('fa', { sensitivity: 'base', numeric: true });
+        
+        // --- توابع کمکی ---
+        function normalizeGASResponse(raw) {
+            if (Array.isArray(raw)) {
+                return raw;
+            }
+        
+            if (raw && typeof raw === 'object') {
+                const ok =
+                    raw.success === true ||
+                    (typeof raw.status === 'string' && raw.status.toLowerCase() === 'success');
+        
+                if (ok && Array.isArray(raw.data)) {
+                    return raw.data;
+                }
+            }
+        
+            throw new Error('ساختار داده نامعتبر است');
+        }
+        
+        function fillBusinessSelect(selectEl, businessNames) {
+            selectEl.innerHTML = '<option value="" selected disabled>نام مجموعه را انتخاب کنید</option>';
+        
+            businessNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                selectEl.appendChild(option);
+            });
+        
+            // گزینه «ورود دستی»
+            const manualOption = document.createElement('option');
+            manualOption.value = 'manual';
+            manualOption.textContent = 'ورود دستی نام مجموعه';
+            selectEl.appendChild(manualOption);
+        }
+        
+        // --- تابع اصلی جایگزین ---
+        async function loadBusinessNames(province = 'all') {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+            try {
+                showStatus('در حال دریافت لیست مجموعه‌ها...', 'processing');
+        
+                const params = new URLSearchParams({ province });
+                const url = `${GAS_URL}?${params.toString()}`;
+        
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+        
+                const raw = await response.json();
+                console.log('داده دریافتی خام:', raw);
+        
+                const items = normalizeGASResponse(raw);
+                let businessNames = items
+                    .map(i => i && i.name)
+                    .filter(Boolean);
+        
+                // حذف موارد تکراری و مرتب‌سازی
+                businessNames = Array.from(new Set(businessNames)).sort(faCollator.compare);
+        
+                if (businessNames.length === 0) {
+                    throw new Error('هیچ مجموعه‌ای برای این استان یافت نشد');
+                }
+        
+                businessList = businessNames;
+                fillBusinessSelect(businessNameEndSelect, businessNames);
+        
+                showStatus('لیست مجموعه‌ها دریافت شد', 'success');
+            } catch (error) {
+                console.error('خطا در دریافت لیست:', error);
+                showStatus('خطا در دریافت لیست مجموعه‌ها: ' + error.message, 'error');
+        
+                businessNameEndSelect.innerHTML = `
+                    <option value="" selected disabled>خطا در دریافت لیست</option>
+                    <option value="manual">ورود دستی نام مجموعه</option>
+                `;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
         
         // نمایش فیلد ورود دستی نام مجموعه
         businessNameEndSelect.addEventListener('change', function() {
             if (this.value === "manual") {
                 manualInputContainer.style.display = 'block';
+                manualBusinessNameInput.value = '';
+                manualBusinessNameInput.focus();
                 usingManualInput = true;
             } else {
                 manualInputContainer.style.display = 'none';
