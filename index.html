@@ -249,7 +249,6 @@
             padding: 20px;
             margin-bottom: 25px;
             animation: slideIn 0.5s ease-out;
-            display: none;
         }
         
         .location-header {
@@ -453,57 +452,6 @@
             margin: 20px 0;
         }
         
-        .negotiation-type-toggle {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            background: #e9ecef;
-            border-radius: 30px;
-            padding: 5px;
-            position: relative;
-        }
-        
-        .toggle-label {
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            z-index: 1;
-            transition: all 0.3s ease;
-        }
-        
-        .toggle-label.active {
-            background: #1a2980;
-            color: white;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            height: calc(100% - 10px);
-            width: 50%;
-            background: white;
-            border-radius: 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            left: 5px;
-        }
-        
-        .toggle-label:first-child.active ~ .toggle-slider {
-            left: 5px;
-        }
-        
-        .toggle-label:last-child.active ~ .toggle-slider {
-            left: calc(50% - 5px);
-        }
-        
         .user-info {
             text-align: center;
             padding: 10px;
@@ -674,7 +622,7 @@
         
         <div class="header">
             <h1><i class="fas fa-handshake"></i> سامانه مدیریت مذاکرات</h1>
-            <p>ثبت و پیگیری مذاکرات حضوری و تلفنی با وندورها</p>
+            <p>ثبت و پیگیری مذاکرات حضوری با وندورها</p>
         </div>
         
         <div class="content">
@@ -693,15 +641,6 @@
                 data-shape="rectangular"
                 data-logo_alignment="left"
                 data-width="300">
-            </div>
-            
-            <!-- سوئیچ نوع مذاکره -->
-            <div class="negotiation-type-toggle">
-                <div class="toggle-container">
-                    <div class="toggle-label" id="tel-toggle" data-type="تلفنی">تلفنی</div>
-                    <div class="toggle-label active" id="in-person-toggle" data-type="حضوری">حضوری</div>
-                    <div class="toggle-slider"></div>
-                </div>
             </div>
             
             <!-- انتخاب نوع درخواست -->
@@ -1003,8 +942,6 @@
         const rotateCameraBtn = document.getElementById('rotate-camera');
         const getLocationBtn = document.getElementById('get-location-btn');
         const systemDisabledOverlay = document.getElementById('system-disabled-overlay');
-        const telToggle = document.getElementById('tel-toggle');
-        const inPersonToggle = document.getElementById('in-person-toggle');
         const cameraSection = document.getElementById('camera-section');
         const locationSection = document.getElementById('location-section');
         const userInfo = document.getElementById('user-info');
@@ -1015,7 +952,7 @@
         let locationData = null;
         let currentCameraMode = "environment"; // حالت پیش‌فرض دوربین عقب
         let currentRequestType = null; // 'start', 'end'
-        let negotiationType = "حضوری"; // 'تلفنی' or 'حضوری'
+        let negotiationType = "حضوری"; // فقط مذاکره حضوری
         let user = null;
         let businessList = [];
         let usingManualInput = false;
@@ -1102,14 +1039,14 @@
             }
             
             // نمایش دوربین فقط برای مذاکرات حضوری شروع
-            if (negotiationType === 'حضوری' && currentRequestType === 'start') {
+            if (currentRequestType === 'start') {
                 cameraSection.style.display = 'block';
             } else {
                 cameraSection.style.display = 'none';
             }
             
-            // نمایش موقعیت‌یابی برای مذاکرات حضوری
-            locationSection.style.display = negotiationType === 'حضوری' ? 'block' : 'none';
+            // نمایش موقعیت‌یابی برای همه مذاکرات حضوری
+            locationSection.style.display = 'block';
         }
         
         // تنظیم وضعیت دکمه‌های انتخاب نوع درخواست
@@ -1137,21 +1074,6 @@
             setActiveRequestType('end');
             updateFormFields();
             submitBtn.disabled = false;
-        });
-        
-        // مدیریت سوئیچ نوع مذاکره
-        telToggle.addEventListener('click', () => {
-            negotiationType = 'تلفنی';
-            telToggle.classList.add('active');
-            inPersonToggle.classList.remove('active');
-            updateFormFields();
-        });
-        
-        inPersonToggle.addEventListener('click', () => {
-            negotiationType = 'حضوری';
-            inPersonToggle.classList.add('active');
-            telToggle.classList.remove('active');
-            updateFormFields();
         });
         
         // فعال‌سازی دوربین
@@ -1339,7 +1261,7 @@
                 return;
             }
             
-            if (negotiationType === 'حضوری' && !locationData) {
+            if (!locationData) {
                 showStatus('لطفاً موقعیت جغرافیایی را دریافت کنید', 'error');
                 return;
             }
@@ -1354,7 +1276,7 @@
                 // ساخت پارامترهای ارسالی
                 const params = new URLSearchParams();
                 params.append('entry.56597741', provinceSelect.value); // استان
-                params.append('entry.400737767', negotiationType); // نوع مذاکره
+                params.append('entry.400737767', negotiationType); // نوع مذاکره (همیشه حضوری)
                 
                 // اطلاعات بر اساس نوع درخواست
                 if (currentRequestType === 'start') {
@@ -1387,12 +1309,10 @@
                     }
                 }
                 
-                // اطلاعات موقعیت (فقط برای حضوری)
-                if (negotiationType === 'حضوری') {
-                    params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
-                    params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
-                    params.append('entry.555772584', locationData.accuracy); // دقت
-                }
+                // اطلاعات موقعیت (همیشه حضوری)
+                params.append('entry.231075143', locationData.latitude); // عرض جغرافیایی
+                params.append('entry.882095543', locationData.longitude); // طول جغرافیایی
+                params.append('entry.555772584', locationData.accuracy); // دقت
                 
                 // ارسال درخواست POST
                 await fetch(formUrl, {
